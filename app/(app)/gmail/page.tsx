@@ -6,16 +6,23 @@ import { Translate } from '@/components/translate';
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Search, PenSquare, Reply, ReplyAll, Forward, Link2, Send, ShieldCheck, Wand2, Trash2, Paperclip, RefreshCw, Sparkles, Eye, Undo2, History, ChevronDown, ChevronRight, Star, Archive, MailOpen, Mail as MailClosed, Clock, X, Plus, FileText, BookmarkPlus, CalendarClock, Plane, SlidersHorizontal } from 'lucide-react';
+import { Mail, Search, PenSquare, Reply, ReplyAll, Forward, Link2, Send, ShieldCheck, Wand2, Trash2, Paperclip, RefreshCw, Sparkles, Eye, Undo2, History, ChevronDown, ChevronRight, Star, Archive, MailOpen, Mail as MailClosed, Clock, X, Plus, FileText, BookmarkPlus, CalendarClock, Plane, SlidersHorizontal, Inbox as InboxIcon, Maximize2, ChevronsRight } from 'lucide-react';
 import { api, useApi, downloadBlob } from '@/lib/client/api';
 import { useApp } from '@/components/app-context';
 import { ProjectSelect, ProviderSelect } from '@/components/pickers';
 import { PageHead, Loading, ErrorNote, Empty, StatusBadge, Button, Tabs, Drawer, Modal, Field, useToast, useConfirm, Notice } from '@/components/ui';
 import { ago, date, bytes, personName } from '@/lib/client/format';
 import { EmailPreview } from '@/components/email-preview';
-import { useMailbox, MyMailboxCard } from '@/components/my-mailbox';
+import { useMailbox, MyMailboxCard, MailboxSwitch } from '@/components/my-mailbox';
 import { AddressChips } from '@/components/address-chips';
 import { LinkedText, EmailText, EmailFrame, EventCard } from '@/components/email-body';
+
+/** Wide reading: the left menu and the email list both shrink to icons so the email gets the whole window; again brings them back. */
+const toggleWideReading = () => {
+  const on = !!document.querySelector('.mail-split.split-rail-first') && document.documentElement.classList.contains('side-mini');
+  window.dispatchEvent(new CustomEvent('ip-split-mail', { detail: on ? 'open' : 'fold' }));
+  window.dispatchEvent(new CustomEvent('ip-side-mini', { detail: !on }));
+};
 
 export default function Page() { return <Suspense fallback={<Loading />}><Gmail /></Suspense>; }
 
@@ -49,15 +56,15 @@ function Gmail() {
   const compose_ = (d: any) => { if (!wide && openMsg) win.set(null); setCompose(d); };
   return <div className="mail-page">
     <div className="mail-top">
-
-      {connected && <span className="mail-account" title={mailbox?.using === 'shared' ? 'Shared company mailbox' : 'Your own mailbox'}>{mailbox?.mailbox}{mailbox?.using === 'shared' ? ' (shared)' : ''}</span>}
-      <div className="btn-tabs" role="tablist">{([['inbox', 'Inbox'], ['drafts', 'Drafts & scheduled'], ['autoreply', 'Auto-reply']] as const).map(([v, l]) => <button key={v} className={tab === v ? 'on' : ''} onClick={() => setTab(v)}>{l}</button>)}</div>
+      <div className="btn-tabs" role="tablist">{([['inbox', 'Inbox', <InboxIcon key="i" size={15} />, 'Your inbox'], ['drafts', 'Drafts', <FileText key="d" size={15} />, 'Drafts, scheduled and sent emails'], ['autoreply', 'Auto-reply', <Plane key="a" size={15} />, 'Away / auto-reply message']] as const).map(([v, l, ic, t]) => <button key={v} className={tab === v ? 'on' : ''} title={t} onClick={() => setTab(v)}>{ic}<span>{l}</span></button>)}</div>
+      {connected && <span className="mail-account" title={mailbox?.using === 'shared' ? `Shared company mailbox: ${mailbox?.mailbox}` : `Your own mailbox: ${mailbox?.mailbox}`}><Mail size={13} /> <span>{mailbox?.mailbox}</span></span>}
+      {connected && <MailboxSwitch />}
       <span className="spacer" />
-      {can.write && <Button variant="primary" icon={<PenSquare size={15} />} onClick={() => setCompose({})}>Compose</Button>}
+      {can.write && <Button variant="primary" icon={<PenSquare size={15} />} onClick={() => setCompose({})} title="Write a new email">Compose</Button>}
     </div>
-    {mailbox && (!connected || mailbox.can_shared) && <div className="mb12">{!connected ? <MyMailboxCard /> : <MyMailboxCard compact />}</div>}
+    {mailbox && !connected && <div className="mb12"><MyMailboxCard /></div>}
     {tab === 'inbox' && (connected ? <div className={`mail-split${openMsg && wide ? ' has-open' : ''}`}>
-        <SplitHandle id="mail" min={300} max={760} minOther={420} fold foldLabel="email list" />
+        <SplitHandle id="mail" min={300} max={760} minOther={420} fold rail={64} foldLabel="email list" />
         <Inbox key={inboxVer} onOpen={id => win.open(id)} selected={openMsg} />
         {wide && <div className="mail-pane">{openMsg ? <MessageView key={openMsg} id={openMsg} onClose={() => win.close()} onChanged={() => setInboxVer(v => v + 1)} onCompose={compose_} /> : <div className="mail-empty"><Mail size={28} /><b>Select an email to read it</b><span>Infinity AI summarises it and can draft the reply.</span></div>}</div>}
       </div>
@@ -104,9 +111,14 @@ function Inbox({ onOpen, selected }: { onOpen: (id: string) => void; selected: s
   };
   const FC: Record<string, string> = { '': '#0f766e', starred: '#c08a00' };
   const F = (k: string, l: string, hint: string) => { const n = k ? counts[k] || 0 : msgs.length; const c = FC[k] || STATE[k]?.color || '#6b7789';
+    if (k && !n && filter !== k) return null; // empty filters are hidden — less to look at
     return <button key={k || 'all'} type="button" className={`mf${filter === k ? ' on' : ''}${!n ? ' zero' : ''}`} style={{ ['--c' as any]: c }} onClick={() => setFilter(filter === k ? '' : k)} aria-pressed={filter === k} title={hint}>
       <b>{k === 'starred' ? <><Star size={13} fill="currentColor" /> {n}</> : n}</b><span>{l}</span></button>; };
   return <div className="mail-list">
+    <div className="mail-rail-head">
+      <button type="button" className="icon-btn" title="Open the email list" onClick={() => window.dispatchEvent(new CustomEvent('ip-split-mail', { detail: 'open' }))}><ChevronsRight size={17} /></button>
+      <button type="button" className="icon-btn" title="Refresh" onClick={reload}><RefreshCw size={15} /></button>
+    </div>
     <form className="mail-search" onSubmit={e => { e.preventDefault(); setPage(null); setQuery(q.trim() || 'in:inbox'); }}>
       <Search size={15} className="muted" /><input placeholder="Search mail" value={q} onChange={e => setQ(e.target.value)} title='Gmail search, e.g. from:x2mconnect.com "agreement" newer_than:30d' />
       {query !== 'in:inbox' && <button type="button" className="icon-btn" title="Clear search" onClick={() => { setQ(''); setQuery('in:inbox'); }}><X size={14} /></button>}
@@ -119,6 +131,7 @@ function Inbox({ onOpen, selected }: { onOpen: (id: string) => void; selected: s
       const st = STATE[m.state] || STATE.fyi;
       return <div key={m.id} role="button" tabIndex={0} className={`mail-row${m.unread ? ' unread' : ''}${selected === m.id ? ' sel' : ''}`} onClick={() => onOpen(m.id)} onKeyDown={e => e.key === 'Enter' && onOpen(m.id)}>
         <span className="bar" style={{ background: m.unread ? STATE.unread.color : m.state === 'needs_reply' ? STATE.needs_reply.color : 'transparent' }} />
+        <span className="mail-ava" title={`${nameOf(m.from)} — ${m.subject || '(no subject)'}\n${st.label} · ${ago(m.internalDate)}`} style={{ ['--c' as any]: m.unread ? STATE.unread.color : st.color }}>{(nameOf(m.from).match(/[A-Za-z\u0600-\u06FF0-9]/)?.[0] || '?').toUpperCase()}{(m.unread || m.state === 'needs_reply') && <i />}</span>
         <div style={{ minWidth: 0 }}>
           <div className="line1"><span className="from">{nameOf(m.from)}</span>{m.thread_count > 1 && <span className="tiny muted">{m.thread_count}</span>}{m.starred && <Star size={12} fill="#e3a008" color="#e3a008" />}<span className="spacer" /><span className="when" title={fmtWhen(m.internalDate)}>{ago(m.internalDate)}</span></div>
           <div className="subj">{m.subject || '(no subject)'}</div>
@@ -185,6 +198,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         <button className="icon-btn" title="Mark as unread" onClick={() => act('unread')}><MailClosed size={16} /></button>
         <button className="icon-btn" title="Archive" onClick={() => act('archive')}><Archive size={16} /></button>
         <button className="icon-btn" title="Delete" onClick={() => act('trash')}><Trash2 size={16} /></button></>}
+        <button className="icon-btn mail-wide-btn" title="Wide reading: shrink the menu and the email list to icons (click again to bring them back)" onClick={toggleWideReading}><Maximize2 size={16} /></button>
         <button className="icon-btn" title="Close" onClick={onClose}><X size={17} /></button>
       </div>
     </div>

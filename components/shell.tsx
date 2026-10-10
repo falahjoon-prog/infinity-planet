@@ -84,6 +84,8 @@ function useSidebar() {
   }, [mini, width]);
   useEffect(() => { document.documentElement.classList.toggle('side-dragging', dragging); }, [dragging]);
   const toggle = useCallback(() => setMini(m => !m), []);
+  // pages can fold/open the menu too (Gmail's wide-reading button): dispatchEvent(new CustomEvent('ip-side-mini', { detail: true | false }))
+  useEffect(() => { const h = (e: Event) => setMini(!!(e as CustomEvent).detail); window.addEventListener('ip-side-mini', h); return () => window.removeEventListener('ip-side-mini', h); }, []);
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B' || e.key === '\\') && !e.shiftKey && !e.altKey) { const t = e.target as HTMLElement; if (e.key.toLowerCase() === 'b' && t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; e.preventDefault(); toggle(); } };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);

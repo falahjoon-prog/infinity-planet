@@ -206,3 +206,20 @@ export function useClickAway<T extends HTMLElement>(onAway: () => void) {
 export function KV({ items }: { items: [React.ReactNode, React.ReactNode][] }) {
   return <dl className="kv">{items.filter(([, v]) => v !== null && v !== undefined && v !== '').map(([k, v], i) => <React.Fragment key={i}><dt>{k}</dt><dd>{v}</dd></React.Fragment>)}</dl>;
 }
+
+/* ---------------- "?" help ----------------
+ * Instead of long help sentences on the page: a small "?" beside a control. Hovering shows the short tip;
+ * clicking opens a readable card with the full explanation. Esc or clicking elsewhere closes it. */
+export function InfoTip({ title, children, tip, align = 'left' }: { title?: React.ReactNode; children: React.ReactNode; tip?: string; align?: 'left' | 'right' }) {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const ref = useClickAway<HTMLSpanElement>(close);
+  useEffect(() => { if (!open) return; const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); } }; window.addEventListener('keydown', k, true); return () => window.removeEventListener('keydown', k, true); }, [open]);
+  return <span ref={ref} className="info-tip">
+    <button type="button" className={`info-tip-btn${open ? ' on' : ''}`} aria-label="More information" aria-expanded={open} title={tip || 'What is this?'} onClick={() => setOpen(o => !o)}>?</button>
+    {open && <span className={`info-tip-card ${align}`} role="dialog">
+      <span className="info-tip-head">{title && <b>{title}</b>}<button type="button" className="icon-btn" aria-label="Close" onClick={close}><X size={15} /></button></span>
+      <span className="info-tip-body">{children}</span>
+    </span>}
+  </span>;
+}

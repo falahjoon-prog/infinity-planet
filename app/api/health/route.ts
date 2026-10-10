@@ -1,4 +1,4 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 /** Public liveness check — reveals nothing about configuration. */
-export async function GET() { return NextResponse.json({ ok: true, app: 'Infinity Planet', version: '4.12.3', timestamp: new Date().toISOString() }); }
+export async function GET() { return NextResponse.json({ ok: true, app: 'Infinity Planet', version: '4.13.0', timestamp: new Date().toISOString() }); }

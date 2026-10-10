@@ -1,5 +1,14 @@
 # Infinity Planet — changelog
 
+## 4.13.0 — Email gets the whole window
+
+- **One slim toolbar in Gmail:** Inbox · Drafts · Auto-reply (with icons), your address, Mine / Shared and Compose all on one line. The big "Connect your own email" box only shows if your email isn't connected at all.
+- **Filters are small pills on one line** instead of two rows of big tiles; filters with nothing in them are hidden.
+- **The email list shrinks to icons again:** drag the divider far to the left (or click it) and the list becomes a slim strip with one round letter per email (unread ones are ringed, and hovering shows who it's from and the subject). Drag it back out or click ›› to open the list again.
+- **Wide reading button** (the ⤢ beside the email's star): folds the left menu and the email list to icons in one click so the email fills the window; click again to bring them back.
+- **Easier on the eyes:** emails are shown in slightly bigger, softer text with more line spacing and a comfortable line length; less padding around the header and buttons.
+- **"?" help instead of long sentences:** explanations such as "Sign in with your own address…" are now behind a small **?** — hover for a short tip, click to read the full text in a larger card.
+
 ## 4.12.3 — No more page code in error boxes; Gmail key check
 
 - When the online server is waking up or restarting, a box full of web-page code (<!DOCTYPE html>…) could appear instead of the page's data (seen in Legal AI → Company records). The app now waits a moment and asks again by itself, and if it still can't, says "The server was just waking up — please try again in a few seconds."
