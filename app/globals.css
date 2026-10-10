@@ -1989,7 +1989,7 @@ i.in, .fin-legend i.in { background: var(--teal, #0f766e); } i.out, .fin-legend 
 /* icon strip: drag the divider far left (or click it) and the list becomes one round letter per email */
 .mail-rail-head, .mail-ava { display: none; }
 .mail-split.split-rail-first { column-gap: 12px; }
-.split-rail-first > .mail-list .mail-search, .split-rail-first > .mail-list .mail-filters, .split-rail-first > .mail-list .mail-more { display: none; }
+.split-rail-first > .mail-list .mail-search, .split-rail-first > .mail-list .mail-filters, .split-rail-first > .mail-list .mail-more { display: none !important; }
 .split-rail-first > .mail-list .mail-rail-head { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line-2); }
 .split-rail-first > .mail-list .mail-row { grid-template-columns: 1fr !important; padding: 7px 0 !important; justify-items: center; }
 .split-rail-first > .mail-list .mail-row > :not(.mail-ava) { display: none !important; }
