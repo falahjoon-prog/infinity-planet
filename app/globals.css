@@ -1965,3 +1965,4 @@ i.in, .fin-legend i.in { background: var(--teal, #0f766e); } i.out, .fin-legend 
 .fin-grid .card-head, .fin-grid2 .card-head { padding-top: 9px; padding-bottom: 9px; }
 @media (min-width: 641px) { .kpis.fin-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
 @media (min-width: 641px) and (max-width: 900px) { .kpis.fin-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+.overlay { z-index: 110; } /* dialogs (e.g. "Delete?") opened from a side panel sit above it */

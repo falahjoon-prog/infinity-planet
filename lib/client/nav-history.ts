@@ -9,7 +9,7 @@
  *  - Closing (✕, Esc, a page's back button) goes back to where you came from — the same section and tab — instead of
  *    jumping to a fixed list.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 const KEY = 'ip-nav', EVT = 'ip-nav', IDX = '__ipNav';
@@ -24,6 +24,7 @@ const urlOf = (u?: string | URL | null) => { if (u == null) return here(); try {
 const cur = (): number | null => { if (typeof history === 'undefined') return null; const st: any = history.state; return st && typeof st[IDX] === 'number' ? st[IDX] : null; };
 const stamp = (data: any, i: number) => (data && typeof data === 'object' ? { ...data, [IDX]: i } : { [IDX]: i });
 
+let lastPush = 0;
 let installed = false, rawReplace: ((data: any, unused: string, url?: string | URL | null) => void) | null = null;
 /** Called once by the app shell: follows every page change (links, buttons, Back/Forward). */
 export function installNavHistory() {
@@ -31,7 +32,7 @@ export function installNavHistory() {
   const push = history.pushState.bind(history), replace = history.replaceState.bind(history); rawReplace = replace;
   history.pushState = function (data: any, unused: string, url?: string | URL | null) {
     const u = urlOf(url); const c = cur(); const s = load(); const i = c == null ? s.length : c + 1;
-    s.length = Math.min(s.length, i); s[i] = u; save(s); push(stamp(data, i), unused, url); changed();
+    s.length = Math.min(s.length, i); s[i] = u; save(s); push(stamp(data, i), unused, url); if (!(data && data.__ipModal)) lastPush = Date.now(); changed();
   };
   history.replaceState = function (data: any, unused: string, url?: string | URL | null) {
     const u = urlOf(url); const c = cur(); const s = load(); const i = c == null ? s.length : c;
@@ -93,4 +94,30 @@ export function useOpenWindow(param = 'open') {
   const open = (id: string) => { if (!id || id === value) return; if (value || !clicked()) router.replace(urlWith(id), { scroll: false }); else router.push(urlWith(id), { scroll: false }); };
   const set = (id: string | null) => { if (!id) close(); else router.replace(urlWith(id), { scroll: false }); };
   return { value, open, set, close };
+}
+
+/**
+ * A pop-up window (dialog or side panel) is a step of its own: Back — the browser's, the mouse's or the top bar's —
+ * closes it and stays on the page. Closing it with ✕, Esc or Save takes its step away again.
+ * No step is added when the window came with its own address (…?open=id, opened a moment ago) or without a click.
+ */
+export function useBackCloses(open: boolean, onClose: () => void, enabled = true) {
+  const closeRef = useRef(onClose); closeRef.current = onClose;
+  useEffect(() => {
+    if (!open || !enabled || typeof window === 'undefined' || !installed) return;
+    if (Date.now() - lastPush < 800) return; // opened together with its own step
+    const ua = (navigator as any).userActivation; if (ua && !ua.isActive) return; // browsers ignore steps added without a click
+    const id = Math.random().toString(36).slice(2);
+    const href = location.href;
+    history.pushState({ ...(history.state || {}), __ipModal: id }, '', href);
+    let mine = true;
+    const onPop = () => { if (mine && (history.state as any)?.__ipModal !== id) { mine = false; closeRef.current(); } };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      if (!mine) return; mine = false;
+      // closed by ✕ / Esc / Save: take the step away, unless the page has moved on meanwhile
+      setTimeout(() => { if ((history.state as any)?.__ipModal === id && location.href === href) history.back(); }, 60);
+    };
+  }, [open, enabled]);
 }

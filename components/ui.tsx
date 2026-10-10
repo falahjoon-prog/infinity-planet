@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { leave } from '@/lib/client/nav-history';
+import { leave, useBackCloses } from '@/lib/client/nav-history';
 import Link from 'next/link';
 import { SectionTitleContext, SectionGroupContext } from './section-context';
 import { Maximize2, Minimize2, X, Inbox, AlertTriangle, Info, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
@@ -114,7 +114,8 @@ export function Tabs<T extends string>({ value, tabs, onChange }: { value: T; ta
 }
 
 /* ---------------- overlays ---------------- */
-export function Modal({ open, onClose, title, children, footer, size }: { open: boolean; onClose: () => void; title: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode; size?: 'wide' | 'xl' | 'compose' }) {
+export function Modal({ open, onClose, title, children, footer, size, noBackStep }: { open: boolean; onClose: () => void; title: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode; size?: 'wide' | 'xl' | 'compose'; noBackStep?: boolean }) {
+  useBackCloses(open, onClose, !noBackStep);
   useEffect(() => { if (!open) return; const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [open, onClose]);
   if (!open) return null;
   return <div className="overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}><div className={`modal ${size || ''}`} role="dialog" aria-modal="true">
@@ -123,6 +124,7 @@ export function Modal({ open, onClose, title, children, footer, size }: { open: 
   </div></div>;
 }
 export function Drawer({ open, onClose, title, children, footer, actions, className }: { open: boolean; onClose: () => void; title: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode; actions?: React.ReactNode; className?: string }) {
+  useBackCloses(open, onClose);
   useEffect(() => { if (!open) return; const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [open, onClose]);
   // Resizable: drag the left edge, or expand to full width. The chosen width is remembered.
   const key = `ip-drawer-w:${className || 'default'}`;
@@ -152,7 +154,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const ask = useCallback((o: ConfirmOpts) => new Promise<boolean>(resolve => { setTyped(''); setState({ ...o, resolve }); }), []);
   const done = (v: boolean) => { state?.resolve(v); setState(null); };
   return <ConfirmCtx.Provider value={ask}>{children}
-    <Modal open={!!state} onClose={() => done(false)} title={state?.title || ''} footer={<><Button onClick={() => done(false)}>Cancel</Button><Button variant={state?.danger ? 'danger solid' : 'primary'} disabled={!!state?.requireText && typed.trim().toUpperCase() !== state.requireText.toUpperCase()} onClick={() => done(true)}>{state?.confirm || 'Confirm'}</Button></>}>
+    <Modal open={!!state} noBackStep onClose={() => done(false)} title={state?.title || ''} footer={<><Button onClick={() => done(false)}>Cancel</Button><Button variant={state?.danger ? 'danger solid' : 'primary'} disabled={!!state?.requireText && typed.trim().toUpperCase() !== state.requireText.toUpperCase()} onClick={() => done(true)}>{state?.confirm || 'Confirm'}</Button></>}>
       <div className="stack" style={{ gap: 12 }}>{state?.body && <div>{state.body}</div>}{state?.requireText && <Field label={<>Type <b>{state.requireText}</b> to confirm</>}><input className="input" value={typed} onChange={e => setTyped(e.target.value)} autoFocus /></Field>}</div>
     </Modal>
   </ConfirmCtx.Provider>;

@@ -1,5 +1,10 @@
 # Infinity Planet — changelog
 
+## 4.12.2 — Back closes pop-up windows everywhere
+
+- **Every pop-up window is now a step of its own** — Pay rates, New task / note / event, compose email, Add money in / expense, templates, side panels and so on, in every section. **Back (the mouse's back button, the browser's, the top bar's ←, Alt+←) closes the window and stays on the page**; the next Back goes to the previous page. Closing with ✕, Esc or Save leaves no extra step behind. "Are you sure?" questions are not steps.
+- A "Delete?" question opened from a side panel (e.g. an invoice) now appears in front of the panel instead of behind it.
+
 ## 4.12.1 — Mouse back button, one-screen Finance overview
 
 - **The mouse's back button (and the browser's own Back) now close an open presentation and stay in Presentations.** Browsers ignore any step a page adds without a click; a new presentation was added as a step after it saved (no click at that moment), so the mouse's back skipped it and jumped to the section before. The step is now added the moment you click a template or send your first message, and nothing in the app adds a step without a click.
