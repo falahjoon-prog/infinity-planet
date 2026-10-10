@@ -87,7 +87,10 @@ export function useOpenWindow(param = 'open') {
     if (prev && (prev === urlWith(null) || pathOf(prev) !== pathname)) { router.back(); return; } // the step before is this list, or the section it was opened from
     router.replace(urlWith(null), { scroll: false });
   };
-  const open = (id: string) => { if (!id || id === value) return; if (value) router.replace(urlWith(id), { scroll: false }); else router.push(urlWith(id), { scroll: false }); };
+  // Browsers skip, on their own Back button (and the mouse's back button), any step a page added without a click —
+  // so a window shown without a click (e.g. after a save) is shown without adding a step.
+  const clicked = () => { const ua = (typeof navigator !== 'undefined' && (navigator as any).userActivation) || null; return !ua || ua.isActive; };
+  const open = (id: string) => { if (!id || id === value) return; if (value || !clicked()) router.replace(urlWith(id), { scroll: false }); else router.push(urlWith(id), { scroll: false }); };
   const set = (id: string | null) => { if (!id) close(); else router.replace(urlWith(id), { scroll: false }); };
   return { value, open, set, close };
 }

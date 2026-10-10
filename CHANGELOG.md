@@ -1,5 +1,11 @@
 # Infinity Planet — changelog
 
+## 4.12.1 — Mouse back button, one-screen Finance overview
+
+- **The mouse's back button (and the browser's own Back) now close an open presentation and stay in Presentations.** Browsers ignore any step a page adds without a click; a new presentation was added as a step after it saved (no click at that moment), so the mouse's back skipped it and jumped to the section before. The step is now added the moment you click a template or send your first message, and nothing in the app adds a step without a click.
+- **Finance overview fits on one screen:** slimmer money in / out / net / bills / payroll boxes, a shorter month-by-month chart with Bills to pay beside it, and the category lists side by side.
+- Suggestion chips in the presentation conversation wrap onto two lines instead of being cut off.
+
 ## 4.12.0 — Finance and Payroll
 
 **Database update 009 (Finance & payroll) is needed — run supabase/migrations/009_finance_payroll_4_12.sql once in Supabase → SQL Editor.**

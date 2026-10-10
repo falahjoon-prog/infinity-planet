@@ -47,7 +47,7 @@ export function FinanceOverview() {
       <div className={`kpi ${d.overdue ? 'alert' : d.unpaid ? 'warn' : ''}`}><div className="label"><FileText size={14} /> Bills to pay</div><div className="value">{aud(d.unpaid, true)}</div><div className="hint">{d.overdue ? `${aud(d.overdue, true)} overdue` : 'nothing overdue'}</div></div>
       <div className="kpi"><div className="label"><Users size={14} /> Payroll</div><div className="value">{aud(d.payroll.gross, true)}</div><div className="hint">{d.payroll.runs} pay run{d.payroll.runs === 1 ? '' : 's'} · super {aud(d.payroll.super, true)}</div></div>
     </div>
-    <div className="grid g-main mt16">
+    <div className="fin-grid mt12">
       <Card title="Month by month" sub="Money in and out this financial year">
         <div className="fin-bars" role="img" aria-label="Money in and out by month">
           {d.months.map((m: any) => <div key={m.month} className="fin-bar" title={`${m.month}: in ${aud(m.income)} · out ${aud(m.expense)}`}>
@@ -57,10 +57,10 @@ export function FinanceOverview() {
         <div className="fin-legend"><span><i className="in" /> Money in</span><span><i className="out" /> Money out</span></div>
       </Card>
       <Card title="Bills to pay" flush actions={<a className="link small" href="/finance/invoices">All invoices</a>}>
-        {!d.bills.length ? <Empty title="Nothing to pay" /> : <div className="list">{d.bills.map((b: any) => <a key={b.id} className="list-item" href={`/finance/invoices?open=${b.id}`}><div className="main-col"><div className="title">{b.party_name || b.description || 'Bill'}</div><div className="meta">{cat(b.category)}{b.due_date ? ` · due ${fmtDate(b.due_date)}` : ''}</div></div><b className={b.due_date && b.due_date < today() ? 'fin-neg' : ''}>{aud(b.total_cents)}</b></a>)}</div>}
+        {!d.bills.length ? <p className="muted small fin-none">Nothing to pay.</p> : <div className="list">{d.bills.map((b: any) => <a key={b.id} className="list-item" href={`/finance/invoices?open=${b.id}`}><div className="main-col"><div className="title">{b.party_name || b.description || 'Bill'}</div><div className="meta">{cat(b.category)}{b.due_date ? ` · due ${fmtDate(b.due_date)}` : ''}</div></div><b className={b.due_date && b.due_date < today() ? 'fin-neg' : ''}>{aud(b.total_cents)}</b></a>)}</div>}
       </Card>
     </div>
-    <div className="grid g2 mt16">
+    <div className="fin-grid2 mt12">
       <Card title="Where money came from">{!d.income_by_category.length ? <p className="muted small">Nothing yet.</p> : <CatBars rows={d.income_by_category} tone="in" />}</Card>
       <Card title="Where money went">{!d.expense_by_category.length ? <p className="muted small">Nothing yet.</p> : <CatBars rows={d.expense_by_category} tone="out" />}</Card>
     </div>
@@ -86,7 +86,7 @@ export function FinanceList({ mode }: { mode: 'income' | 'expenses' | 'invoices'
   const total = entries.filter(e => e.status !== 'cancelled').reduce((s, e) => s + Number(e.total_cents || 0), 0);
   const upload = async (files: FileList | null) => {
     if (!files?.length) return; setBusy('upload');
-    try { const fd = new FormData(); Array.from(files).forEach(f => fd.append('file', f)); fd.append('kind', kind); const r = await apiFetch('/api/finance/upload', { method: 'POST', body: fd }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Upload failed'); toast(`${j.entries.length} file${j.entries.length === 1 ? '' : 's'} read — check the amounts`, 'success'); reload(); if (j.entries.length === 1) win.open(j.entries[0].id); }
+    try { const fd = new FormData(); Array.from(files).forEach(f => fd.append('file', f)); fd.append('kind', kind); const r = await apiFetch('/api/finance/upload', { method: 'POST', body: fd }); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'Upload failed'); toast(`${j.entries.length} file${j.entries.length === 1 ? '' : 's'} read — check the amounts`, 'success'); reload(); }
     catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); if (fileRef.current) fileRef.current.value = ''; }
   };
   const scan = async () => {
@@ -122,7 +122,7 @@ export function FinanceList({ mode }: { mode: 'income' | 'expenses' | 'invoices'
           <td className="hide-sm small">{cat(e.category)}</td><td className="hide-sm small">{e.reference || '—'}</td>
           <td className="num nowrap"><b>{aud(e.total_cents)}</b>{e.gst_cents > 0 && <div className="tiny muted">GST {aud(e.gst_cents)}</div>}</td>
           <td><Status e={e} /></td></tr>)}</tbody></table></div>}
-    <EntryForm open={adding} kind={kind} invoice={mode === 'invoices'} onClose={() => setAdding(false)} onSaved={e => { setAdding(false); reload(); if (e?.id) win.open(e.id); }} />
+    <EntryForm open={adding} kind={kind} invoice={mode === 'invoices'} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); reload(); }} />
     <EntryDrawer id={win.value} onClose={() => win.close()} onChanged={reload} />
   </>;
 }

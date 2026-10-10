@@ -24,12 +24,15 @@ function Presentations() {
   const tab = sp.get('tab') === 'research' ? 'research' : 'decks';
   // The open presentation lives in the address (…?open=id), so Back closes it and stays in Presentations.
   const win = useOpenWindow();
-  const [shown, setShown] = useState<{ id: string | null; n: number }>({ id: win.value, n: 0 });
-  const own = useRef<string | null>(null); const prev = useRef(win.value);
+  // A new presentation becomes a step the moment you start it (…?open=new, on your click — browsers only let a click add a step),
+  // and that step becomes …?open=<id> when it is first saved, without adding another step.
+  const real = (v: string | null) => (v && v !== 'new' ? v : null);
+  const [shown, setShown] = useState<{ id: string | null; n: number }>({ id: real(win.value), n: 0 });
+  const own = useRef<string | null>(null); const prev = useRef(win.value); const cur = useRef(win.value); cur.current = win.value;
   useEffect(() => {
     const p = prev.current; prev.current = win.value; if (p === win.value) return;
-    if (!p && win.value && win.value === own.current) return; // the presentation just saved for the first time — keep it as it is
-    own.current = null; setShown(x => ({ id: win.value, n: x.n + 1 }));
+    if ((!p || p === 'new') && win.value && win.value === own.current) return; // the presentation being worked on — keep it as it is
+    own.current = null; setShown(x => ({ id: real(win.value), n: x.n + 1 }));
   }, [win.value]);
   const reset = () => setShown(x => ({ id: null, n: x.n + 1 }));
   return <>
@@ -37,7 +40,8 @@ function Presentations() {
     {tab === 'research' ? <ResearchPanel onDeck={() => router.push('/presentations?from=research')} />
       : <DeckStudio key={`deck-${shown.n}`} assetId={shown.id}
           onOpen={id => win.open(id)}
-          onSaved={id => { own.current = id; win.open(id); }}
+          onStart={() => { if (!win.value) { own.current = 'new'; win.open('new'); } }}
+          onSaved={id => { if (cur.current === 'new') { own.current = id; win.set(id); } }}
           onNew={() => { if (win.value) win.set(null); else reset(); }}
           onClose={() => { if (win.value) win.close(); else reset(); }} />}
   </>;
@@ -46,7 +50,7 @@ function Presentations() {
 // ====================================================================== presentations
 type Msg = { id: number; role: 'user' | 'assistant'; content: string; prev?: Deck | null; undone?: boolean; engine?: string };
 
-function DeckStudio({ assetId, onOpen, onSaved, onNew, onClose }: { assetId: string | null; onOpen: (id: string) => void; onSaved: (id: string) => void; onNew: () => void; onClose: () => void }) {
+function DeckStudio({ assetId, onOpen, onStart, onSaved, onNew, onClose }: { assetId: string | null; onOpen: (id: string) => void; onStart: () => void; onSaved: (id: string) => void; onNew: () => void; onClose: () => void }) {
   const sp = useSearchParams(); const { me } = useApp(); const toast = useToast(); const confirm = useConfirm();
   const saved = useApi<any>('/api/marketing/assets?kind=deck');
   const [deck, setDeck] = useState<Deck | null>(null); const [cur, setCur] = useState(0);
@@ -64,6 +68,7 @@ function DeckStudio({ assetId, onOpen, onSaved, onNew, onClose }: { assetId: str
     const t = ALL_BUILTIN.find(x => x.id === id);
     if (deck) setDeck({ ...deck, theme: id });
     else if (t?.outline) { // collection templates start with a ready outline
+      onStart();
       setDeck(normalizeDeck({ ...t.outline, theme: id }, t.outline.title)); setCur(0); setPendingTheme(id);
       setMsgs(m => [...m, { id: Date.now(), role: 'assistant', content: `Started **${t.outline!.title}** from the “${t.name}” template — ${t.outline!.slides.length} slides with our own facts (each slide's sources are in its notes). Fill in the [●] parts, or tell me what to change.` }]);
     } else setPendingTheme(id);
@@ -85,6 +90,7 @@ function DeckStudio({ assetId, onOpen, onSaved, onNew, onClose }: { assetId: str
   const send = async (raw?: string) => {
     const message = (raw ?? text).trim(); if (!message || busy) return;
     const id = Date.now(); setMsgs(m => [...m, { id, role: 'user', content: message }]); setText(''); setBusy('chat');
+    if (!deck) onStart();
     try {
       const r = await api.post('/api/decks/turn', { message, deck, current_slide: deck ? cur : undefined, theme: themeId, history: msgs.filter(m => !m.undone).map(m => ({ role: m.role, content: m.content })), provider, project_id: project, research, length });
       const prev = deck;
