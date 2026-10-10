@@ -40,7 +40,7 @@ function System() {
     { name: 'Company', items: [
       { id: 'business', label: 'Business details', icon: <Building2 size={15} />, admin: true, sub: 'Name, logo, colours and contact details used on letters and emails.' },
       { id: 'email', label: 'Email look', icon: <Mail size={15} />, admin: true, sub: 'How outgoing emails look.' },
-      { id: 'appearance', label: 'Theme & colours', icon: <Palette size={15} />, admin: true, sub: 'Colours of the menu, buttons and bars for everyone.' },
+      { id: 'appearance', label: 'Theme & colours', icon: <Palette size={15} />, sub: 'Choose the colour of everything — only your own screens change.' },
       { id: 'rules', label: 'Legal & policies', icon: <SlidersHorizontal size={15} />, admin: true, sub: 'Legal identity, approval rules and instructions the AI follows.' }] },
     { name: 'Connections', items: [
       { id: 'ai', label: 'AI', icon: <Sparkles size={15} />, sub: 'Add an AI key and choose which AI the assistant uses.' },

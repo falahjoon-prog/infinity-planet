@@ -1,5 +1,15 @@
 # Infinity Planet — changelog
 
+## 4.13.1 — Choose the colour of everything, each person for themselves
+
+- **Everyone can change colours now** (Settings → Theme & colours), and their choice only changes **their own screens** — on every device they sign in to. Nobody else's screen changes.
+- **Admins** also have **Company default**: the colours everyone starts with until they pick their own. "Use company colours" forgets your own choice.
+- **Every colour can be set:** menu and menu text, top bar and top bar text, page background, **page titles**, **notes under titles**, boxes/panels, box headings, text, faint text and hints, buttons, button text, accent and corner roundness.
+- **Always readable:** colours marked *auto* are picked to be easy to read on their background (e.g. a grey page background gets dark titles). A ⚠ beside a colour means the text would be hard to read — click it and a readable colour is chosen.
+- **A live preview** shows the menu, top bar, page title, a box and a button with your colours before you save.
+- **Smaller controls:** the theme boxes are now small chips on one line, and each colour is a compact swatch row.
+- Dark mode keeps its own colours.
+
 ## 4.13.0 — Email gets the whole window
 
 - **One slim toolbar in Gmail:** Inbox · Drafts · Auto-reply (with icons), your address, Mine / Shared and Compose all on one line. The big "Connect your own email" box only shows if your email isn't connected at all.

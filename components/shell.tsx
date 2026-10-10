@@ -1,6 +1,6 @@
 'use client';
 import { syncDisplayFromAccount } from '@/components/display-size';
-import { applyTheme } from '@/lib/client/theme';
+import { applyEffective } from '@/lib/client/theme';
 import { hasArea, pageArea } from '@/lib/access';
 import { AiDock } from '@/components/ai-dock';
 import { installNavHistory, useNavSteps } from '@/lib/client/nav-history';
@@ -124,7 +124,7 @@ function useSideTip(enabled: boolean) {
 
 function Frame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  useEffect(() => { syncDisplayFromAccount(); api.get('/api/settings').then(r => applyTheme(r.settings.ui_theme)).catch(() => {}); const h = (e: any) => applyTheme(e.detail); window.addEventListener('ip-theme', h); return () => window.removeEventListener('ip-theme', h); }, []);
+  useEffect(() => { syncDisplayFromAccount(); api.get('/api/settings').then(r => applyEffective(r.settings.ui_theme || null)).catch(() => {}); const h = (e: any) => applyEffective(e.detail); window.addEventListener('ip-theme', h); return () => window.removeEventListener('ip-theme', h); }, []);
   const router = useRouter();
   const { me } = useApp();
   const [navOpen, setNavOpen] = useState(false);

@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/client/api';
-import { applyMode } from '@/lib/client/theme';
+import { applyMode, applyEffective, MY_THEME_KEY } from '@/lib/client/theme';
 
 export const SIZES = [{ v: 'auto', l: 'Fit to window' }, { v: '0.9', l: 'Compact' }, { v: '1', l: 'Normal' }, { v: '1.1', l: 'Large' }];
 export const TEXT_SIZES = [{ v: '0.9', l: 'Small' }, { v: '1', l: 'Normal' }, { v: '1.1', l: 'Large' }, { v: '1.25', l: 'Extra large' }];
@@ -16,6 +16,7 @@ export async function syncDisplayFromAccount() {
     if (m.ui_scale) localStorage.setItem('ip-ui-scale', m.ui_scale);
     if (m.text_size) localStorage.setItem('ip-text-size', m.text_size);
     if (m.theme_mode) { localStorage.setItem('ip-theme-mode', m.theme_mode); applyMode(m.theme_mode); }
+    if (m.my_theme && typeof m.my_theme === 'object') { localStorage.setItem(MY_THEME_KEY, JSON.stringify(m.my_theme)); applyEffective(); } else if (m.my_theme === null) { localStorage.removeItem(MY_THEME_KEY); applyEffective(); }
     (window as any).__applyUiScale?.();
   } catch {}
 }
