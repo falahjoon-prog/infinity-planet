@@ -1,4 +1,4 @@
-# Render blueprint — Infinity Planet for RHC City at https://app.rhccity.com.au
+# Render blueprint — Infinity Planet for RHC City
 # Render → New → Blueprint → pick this repository. Secrets (sync: false) are typed in on Render, never stored in Git.
 services:
   - type: web
@@ -9,17 +9,13 @@ services:
     buildCommand: npm ci --no-audit --no-fund && npm run build
     startCommand: npx next start -p $PORT -H 0.0.0.0
     healthCheckPath: /api/health
-    domains:
-      - app.rhccity.com.au
     envVars:
       - key: NODE_VERSION
         value: "22"
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
-      - key: RHC_PUBLIC_URL
-        value: https://app.rhccity.com.au
-      - key: GOOGLE_REDIRECT_URI
-        value: https://app.rhccity.com.au/api/google/callback
+      # RHC_PUBLIC_URL and GOOGLE_REDIRECT_URI are set on Render once the address is known
+      # (https://<service>.onrender.com now; https://app.rhccity.com.au after the GoDaddy DNS record is added)
       - key: RHC_HOME_JURISDICTION
         value: Queensland
       # --- secrets: copy each value from your .env.local into Render (Environment tab) ---
