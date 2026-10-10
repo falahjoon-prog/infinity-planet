@@ -34,12 +34,21 @@ export async function apiFetch(url: string, init: RequestInit = {}) {
 async function parse<T>(res: Response): Promise<T> {
   const ct = res.headers.get('content-type') || '';
   const data = ct.includes('json') ? await res.json().catch(() => ({})) : await res.text();
+  // A web page instead of data: the server was starting up or restarting (the online server sleeps when unused)
+  const page = typeof data === 'string' && /^\s*<(!doctype|html)/i.test(data);
+  if (page && res.url.includes('/api/')) throw new ApiError(res.status || 503, 'The server was just waking up — please try again in a few seconds.');
   if (!res.ok) throw new ApiError(res.status, (data as any)?.error || (typeof data === 'string' && data.slice(0, 200)) || `Request failed (${res.status})`);
   return data as T;
 }
 
 export const api = {
-  get: <T = any>(url: string) => apiFetch(url).then(r => parse<T>(r)),
+  // Reading data: if the server answers with a web page (it was waking up / restarting), wait and ask again (twice).
+  get: async <T = any>(url: string): Promise<T> => {
+    for (let i = 0; ; i++) {
+      try { return await apiFetch(url).then(r => parse<T>(r)); }
+      catch (e: any) { if (i >= 2 || !/waking up/.test(e?.message || '')) throw e; await new Promise(r => setTimeout(r, 2500 * (i + 1))); }
+    }
+  },
   post: <T = any>(url: string, body?: unknown) => apiFetch(url, { method: 'POST', body: body instanceof FormData ? body : JSON.stringify(body ?? {}) }).then(r => parse<T>(r)),
   patch: <T = any>(url: string, body?: unknown) => apiFetch(url, { method: 'PATCH', body: JSON.stringify(body ?? {}) }).then(r => parse<T>(r)).then(d => {
     // A task was just completed: ask how long it took (components/time-check.tsx)

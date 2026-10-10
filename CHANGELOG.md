@@ -1,5 +1,10 @@
 # Infinity Planet — changelog
 
+## 4.12.3 — No more page code in error boxes; Gmail key check
+
+- When the online server is waking up or restarting, a box full of web-page code (<!DOCTYPE html>…) could appear instead of the page's data (seen in Legal AI → Company records). The app now waits a moment and asks again by itself, and if it still can't, says "The server was just waking up — please try again in a few seconds."
+- Gmail on the online server: the key that protects the saved Gmail connection is read more forgivingly (stray spaces or line breaks from pasting are ignored). If the PC and the online server still have different keys, the message now says so plainly.
+
 ## 4.12.2 — Back closes pop-up windows everywhere
 
 - **Every pop-up window is now a step of its own** — Pay rates, New task / note / event, compose email, Add money in / expense, templates, side panels and so on, in every section. **Back (the mouse's back button, the browser's, the top bar's ←, Alt+←) closes the window and stays on the page**; the next Back goes to the previous page. Closing with ✕, Esc or Save leaves no extra step behind. "Are you sure?" questions are not steps.
