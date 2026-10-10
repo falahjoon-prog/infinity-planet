@@ -18,7 +18,7 @@ export function route<C extends Ctx = Ctx>(fn: (req: NextRequest, ctx: C) => Pro
       const message = e?.message || String(e) || 'Request failed';
       console.error('[Infinity API]', req.method, req.nextUrl.pathname, message);
       // A column/table from a newer version is missing → the database update has not been run yet
-      if (/schema cache|does not exist/i.test(message) && /column|relation|table/i.test(message)) return fail(409, `The database needs updating for this feature: in Supabase → SQL Editor run the newest file in supabase/migrations (007_activity_hours_4_7.sql), then reload. (${message})`);
+      if (/schema cache|does not exist/i.test(message) && /column|relation|table/i.test(message)) return fail(409, `The database needs updating for this feature: in Supabase → SQL Editor run the newest file in supabase/migrations (009_finance_payroll_4_12.sql), then reload. (${message})`);
       return fail(500, message);
     }
   };

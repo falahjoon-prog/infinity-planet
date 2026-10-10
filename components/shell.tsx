@@ -11,7 +11,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   LayoutDashboard, FolderKanban, BriefcaseBusiness, Files, Scale, FileSignature, StickyNote, Megaphone, Palette, Mail, CalendarDays,
   CheckSquare, MessagesSquare, ShieldCheck, Settings, Search, Bell, Menu, Plus, LogOut, User, X, Clock3, AlertTriangle, FileText, MoreHorizontal, Sparkles, HardDrive, BellPlus,
-  Monitor, Presentation, PanelLeftClose, PanelLeftOpen, Repeat, UserPlus, ChevronLeft, ChevronRight, Timer, ArrowLeft, ArrowRight,
+  Monitor, Presentation, PanelLeftClose, PanelLeftOpen, Repeat, UserPlus, ChevronLeft, ChevronRight, Timer, ArrowLeft, ArrowRight, Landmark,
 } from 'lucide-react';
 import { TimeCheck } from './time-check';
 import { useUsageTracker } from '@/lib/client/usage';
@@ -39,6 +39,7 @@ export const SECTIONS: Section[] = [
   { key: 'presentations', label: 'Presentations', icon: Presentation, tabs: [{ href: '/presentations', label: 'Presentations' }, { href: '/presentations?tab=research', label: 'Research' }] },
   { key: 'approvals', label: 'Approvals', icon: ShieldCheck, badge: 'approvals', tabs: [{ href: '/approvals', label: 'Approvals' }] },
   { key: 'activity', label: 'Activity & hours', icon: Timer, badge: 'hours', tabs: [{ href: '/activity', label: 'Activity & hours', key: 'hours' }] },
+  { key: 'finance', label: 'Finance', icon: Landmark, tabs: [{ href: '/finance/overview', label: 'Overview' }, { href: '/finance/income', label: 'Money in' }, { href: '/finance/expenses', label: 'Expenses' }, { href: '/finance/invoices', label: 'Invoices' }, { href: '/finance/payroll', label: 'Payroll' }] },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {

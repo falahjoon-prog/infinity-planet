@@ -14,8 +14,13 @@ services:
         value: "22"
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
-      # RHC_PUBLIC_URL and GOOGLE_REDIRECT_URI are set on Render once the address is known
-      # (https://<service>.onrender.com now; https://app.rhccity.com.au after the GoDaddy DNS record is added)
+      # The online address (change both to https://app.rhccity.com.au once the GoDaddy DNS record is added)
+      - key: RHC_PUBLIC_URL
+        value: https://infinity-planet.onrender.com
+      - key: GOOGLE_REDIRECT_URI
+        value: https://infinity-planet.onrender.com/api/google/callback
+      - key: OLLAMA_ENABLED
+        value: "false"          # Ollama runs on the office PC, not online
       - key: RHC_HOME_JURISDICTION
         value: Queensland
       # --- secrets: copy each value from your .env.local into Render (Environment tab) ---

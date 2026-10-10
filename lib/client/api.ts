@@ -46,6 +46,7 @@ export const api = {
     if (/^\/api\/tasks\/[0-9a-f-]{36}$/i.test(url) && (body as any)?.status === 'done') window.dispatchEvent(new CustomEvent('ip-time-check'));
     return d;
   }),
+  put: <T = any>(url: string, body?: unknown) => apiFetch(url, { method: 'PUT', body: JSON.stringify(body ?? {}) }).then(r => parse<T>(r)),
   del: <T = any>(url: string) => apiFetch(url, { method: 'DELETE' }).then(r => parse<T>(r)),
   text: (url: string) => apiFetch(url).then(async r => { if (!r.ok) { const j = await r.json().catch(() => ({})); throw new ApiError(r.status, j.error || `Request failed (${r.status})`); } return r.text(); }),
   blob: (url: string) => apiFetch(url).then(async r => { if (!r.ok) { const j = await r.json().catch(() => ({})); throw new ApiError(r.status, j.error || `Request failed (${r.status})`); } return { blob: await r.blob(), name: /filename="([^"]+)"/.exec(r.headers.get('content-disposition') || '')?.[1] || 'download' }; }),

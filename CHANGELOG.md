@@ -1,5 +1,18 @@
 # Infinity Planet — changelog
 
+## 4.12.0 — Finance and Payroll
+
+**Database update 009 (Finance & payroll) is needed — run supabase/migrations/009_finance_payroll_4_12.sql once in Supabase → SQL Editor.**
+
+- **New Finance section** (left menu), for admins and directors only (others only if an admin ticks "Finance & payroll" for them in Team & roles):
+  - **Overview** — money in, money out, net, bills to pay (and overdue), payroll for the financial year (1 July – 30 June), month by month, and where money came from / went.
+  - **Money in** — investor funds (capital, loans) and other income, with a running total per investor. "Expected" for money promised but not yet in the bank.
+  - **Expenses** — everything paid out, by category (consultancy, legal, accounting, engineering, architecture & design, planning, marketing, software, rent, utilities, travel, insurance, government fees, wages, super, PAYG…).
+  - **Invoices** — bills received from consultants and suppliers. **Upload** a PDF, Word file or photo, or **Find invoices in email**: the app looks through your mailbox for emails with an invoice, bill or receipt attached, reads the supplier, ABN, invoice number, dates, GST and total, sorts it into a category and files it as a bill to check. Open it, compare with the invoice shown beside the fields, then **Confirm & save**; **Mark paid** when paid. The same attachment is never imported twice. Invoice files are kept privately, separate from the shared document library.
+  - **Payroll** — set each person's pay in **Pay rates**: employee (tax withheld + super) or contractor (ABN, optional GST), hourly rate or annual salary, tax-free threshold and other ATO scales, super rate (12%) and fund. Each week the hours come from Activity & hours (the signed-off hours, otherwise app use + logged time) and can be changed. The app works out gross pay, **PAYG withholding (ATO Schedule 1 weekly formulas for payments from 1 July 2026)**, super and net pay; **Finalise** locks the run and records wages, PAYG (owed to the ATO) and super as bills to pay; **Mark as paid** when paid. Printable payslips for each person.
+- Not included yet: STP (Single Touch Payroll) lodgement with the ATO, HELP/study-loan repayments, leave balances and overtime rates — use your payroll/STP service for lodging.
+- **Online:** the app now also runs at https://infinity-planet.onrender.com (free plan: it sleeps when unused, so the first visit can take about a minute).
+
 ## 4.10.2 — Back closes an open presentation, Send never under the assistant button
 
 - **An open presentation is always one step:** a presentation that appears from a template or from the conversation is saved as a draft straight away and opened in the address, so **Back closes it and you stay in Presentations**; the next Back goes to the section you were in before (e.g. Marketing). Before, only presentations opened from "Saved" did this.

@@ -27,7 +27,10 @@ export const AREAS: { key: string; label: string; paths: string[]; api: string[]
   { key: 'approvals', label: 'Approvals', paths: ['/approvals'], api: ['/api/approvals'] },
   { key: 'executive', label: 'Executive dashboard', paths: ['/executive'], api: ['/api/executive'] },
   { key: 'activity', label: 'Activity & hours', paths: ['/activity'], api: ['/api/activity/hours'] },
+  { key: 'finance', label: 'Finance & payroll', paths: ['/finance'], api: ['/api/finance'] },
 ];
+/** Areas nobody gets by default: only admins and directors, plus members an admin ticks one by one. */
+export const PRIVATE_AREAS = ['finance'];
 export const AREA_KEYS = AREAS.map(a => a.key);
 export const FULL_ACCESS_ROLES = ['admin', 'director'];
 
@@ -47,6 +50,7 @@ export function pageArea(pathname: string, search = ''): string | null {
  */
 export type AreaLevel = 'full' | 'view' | null;
 export function areaLevel(role: string, areas: string[] | null | undefined, key: string | null): AreaLevel {
+  if (key && PRIVATE_AREAS.includes(key) && !FULL_ACCESS_ROLES.includes(role)) return Array.isArray(areas) ? (areas.includes(key) ? 'full' : areas.includes(`${key}:view`) ? 'view' : null) : null;
   if (!key || FULL_ACCESS_ROLES.includes(role) || !Array.isArray(areas)) return 'full';
   if (areas.includes(key)) return 'full';
   if (areas.includes(`${key}:view`)) return 'view';
