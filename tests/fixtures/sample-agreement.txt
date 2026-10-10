@@ -1,0 +1,76 @@
+DRAFT — SUBJECT TO REVIEW BY RHC AND ITS SOLICITORS. NOT FOR EXECUTION UNTIL APPROVED.
+
+# Consultancy Services Agreement
+
+**Date:** 9 October 2026
+
+## PARTIES
+1. **RHC City Pty Ltd** (ABN 12 345 678 901) of 1 Eagle Street, Brisbane QLD 4000 (**RHC**)
+2. **Smith Planning Pty Ltd** (ABN [●]) of [● address] (**Consultant**)
+
+## BACKGROUND
+A. RHC is developing the Riverside Residences project at 22 River Road, Hamilton QLD 4007 (**Project**).
+B. RHC wishes to engage the Consultant to provide town planning services for the Project on the terms of this agreement.
+
+## 1. DEFINITIONS AND INTERPRETATION
+1.1 In this agreement, unless the context requires otherwise:
+(a) **Business Day** means a day that is not a Saturday, Sunday or public holiday in Brisbane, Queensland;
+(b) **Deliverables** means all documents, reports, plans and other material prepared by the Consultant in performing the Services;
+(c) **Fee** means the amount set out in Item 3 of the Schedule;
+(d) **GST** has the meaning given in the A New Tax System (Goods and Services Tax) Act 1999 (Cth);
+(e) **Insolvency Event** means, in relation to a party, the appointment of a liquidator, administrator, receiver or similar officer, or any analogous event;
+(f) **Services** means the services described in Item 2 of the Schedule.
+1.2 In this agreement, headings are for convenience only and do not affect interpretation, and the singular includes the plural and vice versa.
+
+## 2. ENGAGEMENT AND SERVICES
+2.1 RHC engages the Consultant to perform the Services, and the Consultant accepts that engagement, on the terms of this agreement.
+2.2 The Consultant must:
+(a) perform the Services with the degree of skill, care and diligence expected of a qualified and experienced town planner;
+(b) comply with all applicable laws, including the Planning Act 2016 (Qld); and
+(c) comply with RHC's reasonable directions, including:
+(i) attending project control group meetings when requested; and
+(ii) providing written progress reports every two weeks.
+
+## 3. FEES AND PAYMENT
+3.1 In consideration of the Services, RHC must pay the Consultant the Fee in accordance with this clause 3.
+3.2 The Consultant must issue a valid tax invoice at the end of each calendar month for Services properly performed in that month.
+3.3 RHC must pay each undisputed invoice within 30 days after receiving it.
+3.4 If GST is payable on a taxable supply made under this agreement, the recipient must pay an additional amount equal to the GST, at the same time as the consideration, on receipt of a valid tax invoice.
+
+## 4. INTELLECTUAL PROPERTY
+4.1 All intellectual property rights in the Deliverables vest in RHC on creation.
+4.2 The Consultant grants RHC a perpetual, irrevocable, royalty-free licence to use any pre-existing material incorporated into the Deliverables for the purposes of the Project.
+
+## 5. LIMITATION OF LIABILITY
+5.1 Neither party is liable to the other for any indirect or consequential loss, including loss of profit or revenue.
+5.2 The Consultant's aggregate liability under this agreement is limited to the amount recoverable under the professional indemnity insurance required by clause 6.
+
+## 6. INSURANCE
+The Consultant must maintain, for the term of this agreement and for six years after it ends:
+- public liability insurance of at least $20 million per occurrence;
+- professional indemnity insurance of at least $5 million per claim; and
+- workers compensation insurance as required by law.
+
+## 7. TERMINATION
+7.1 RHC may terminate this agreement for convenience by giving 14 days' written notice to the Consultant.
+7.2 Either party may terminate this agreement immediately by written notice if the other party:
+(a) commits a material breach that is not remedied within 14 days after receiving notice of it; or
+(b) suffers an Insolvency Event.
+
+## 8. GOVERNING LAW
+This agreement is governed by the laws of Queensland and each party submits to the non-exclusive jurisdiction of the courts of Queensland.
+
+---
+
+## SCHEDULE
+**Item 1 — Project:** Riverside Residences, 22 River Road, Hamilton QLD 4007
+**Item 2 — Services:** [● describe the planning services]
+**Item 3 — Fee:** $[●] (excluding GST)
+
+## EXECUTION
+**Executed by RHC City Pty Ltd** (ABN 12 345 678 901) in accordance with section 127 of the Corporations Act 2001 (Cth):
+
+______________________________ Signature of director
+______________________________ Name of director (print)
+______________________________ Signature of director/secretary
+______________________________ Name of director/secretary (print)

@@ -1,0 +1,21 @@
+# Never upload secrets or build output
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+out/
+*.zip
+*.tgz
+_to_delete/
+tsconfig.tsbuildinfo
+next-env.d.ts
+desktop/dist/
+desktop/out/
+Launcher/*.exe
+.DS_Store
+Thumbs.db
+*.log
+
+# Signed company documents and the GM seal stay on this computer (loaded into the database from here)
+company-records/

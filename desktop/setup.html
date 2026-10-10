@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Infinity Planet — Connect</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(120% 120% at 0% 100%,#1c3a63,#08121f);font-family:'Segoe UI',system-ui,sans-serif;color:#e4ebf5}
+.card{width:100%;max-width:460px;background:#fff;color:#142033;border-radius:18px;padding:32px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.mark{width:46px;height:46px;border-radius:11px;background:linear-gradient(140deg,#1c3a63,#08121f);border:1px solid rgba(200,164,92,.6);display:grid;place-items:center;font:700 20px Georgia,serif;color:#c8a45c;margin-bottom:16px}
+h1{font-size:22px;margin:0 0 6px}p{color:#5b687c;font-size:14px;line-height:1.55;margin:0 0 18px}
+label{font-size:12px;font-weight:600;color:#44526a}input{width:100%;height:44px;border:1px solid #d5dce6;border-radius:10px;padding:0 12px;font-size:15px;margin:6px 0 14px;outline:none}input:focus{border-color:#2f6fd0;box-shadow:0 0 0 3px rgba(47,111,208,.15)}
+button{width:100%;height:44px;border:0;border-radius:10px;background:#13294b;color:#fff;font-weight:700;font-size:14px;cursor:pointer}button:disabled{opacity:.6}
+.msg{margin-top:14px;font-size:13px;border-radius:9px;padding:10px 12px;display:none}.err{display:block;background:#fcebea;color:#8f2a20}.ok{display:block;background:#e7f5ec;color:#1e6a40}
+small{display:block;color:#7a879b;margin-top:16px;line-height:1.5}code{background:#eef1f5;border-radius:4px;padding:1px 5px}
+</style></head><body>
+<form class="card" id="f"><img class="mark" src="build/icon.png" alt="" style="padding:0;object-fit:cover"><h1>Connect to Infinity Planet</h1>
+<p>Enter the address of your Infinity Planet server. Your administrator will give you this.</p>
+<label for="u">Server address</label><input id="u" placeholder="http://192.168.1.20:3300 or https://rhc.yourdomain.com" autofocus>
+<button id="b">Connect</button><div id="m" class="msg"></div>
+<small>On the server PC itself use <code>http://localhost:3300</code>. Team members use the server PC's network address or your hosted HTTPS address. No passwords or keys are stored on this PC — you sign in after connecting.</small></form>
+<script>
+const q=new URLSearchParams(location.search);const u=document.getElementById('u'),m=document.getElementById('m'),b=document.getElementById('b');
+if(q.get('error')){m.textContent=q.get('error');m.className='msg err';}
+window.rhcDesktop.getServer().then(s=>{u.value=q.get('current')||s||'';});
+document.getElementById('f').onsubmit=async e=>{e.preventDefault();b.disabled=true;b.textContent='Checking…';m.className='msg';
+ const r=await window.rhcDesktop.setServer(u.value);
+ if(r.ok){m.textContent='Connected. Opening Infinity Planet…';m.className='msg ok';}else{m.textContent=r.error;m.className='msg err';b.disabled=false;b.textContent='Connect';}};
+</script></body></html>

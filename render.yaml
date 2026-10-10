@@ -1,0 +1,55 @@
+# Render blueprint — Infinity Planet for RHC City at https://app.rhccity.com.au
+# Render → New → Blueprint → pick this repository. Secrets (sync: false) are typed in on Render, never stored in Git.
+services:
+  - type: web
+    name: infinity-planet
+    runtime: node
+    plan: free            # sleeps after ~15 min idle; first visit then takes ~1 min. "starter" keeps it awake.
+    region: singapore     # closest Render region to Brisbane
+    buildCommand: npm ci --no-audit --no-fund && npm run build
+    startCommand: npx next start -p $PORT -H 0.0.0.0
+    healthCheckPath: /api/health
+    domains:
+      - app.rhccity.com.au
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: RHC_PUBLIC_URL
+        value: https://app.rhccity.com.au
+      - key: GOOGLE_REDIRECT_URI
+        value: https://app.rhccity.com.au/api/google/callback
+      - key: RHC_HOME_JURISDICTION
+        value: Queensland
+      # --- secrets: copy each value from your .env.local into Render (Environment tab) ---
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_ENCRYPTION_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      - key: SIGNUP_DOMAINS
+        sync: false
+      - key: RHC_OWNER_EMAIL
+        sync: false
+      - key: RHC_OWNER_NAME
+        sync: false
