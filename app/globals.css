@@ -2075,3 +2075,4 @@ i.in, .fin-legend i.in { background: var(--teal, #0f766e); } i.out, .fin-legend 
 .pv-box-h { color: var(--pv-box-h); font-weight: 700; font-size: 11.5px; }
 .pv-text { color: var(--pv-text); } .pv-faint { color: var(--pv-faint); }
 .pv-btn { margin-top: 3px; background: var(--pv-btn); color: var(--pv-btn-ink); border-radius: 5px; padding: 2px 9px; font-weight: 600; }
+/* Designer theme buttons: a labelled pill, not the 24px colour circle used by the stamp maker and colour pickers */ .swatches .swatch { width: auto; height: auto; border-radius: 8px; border: 1px solid var(--line); box-shadow: none; padding: 5px 8px; background: var(--surface); } .swatches .swatch.on { border-color: var(--navy-700); box-shadow: 0 0 0 2px rgba(28,58,99,.15); }
