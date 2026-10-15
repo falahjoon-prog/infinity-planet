@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { extractDocumentText } from './extract';
 import { chunkText } from './chunks';
+import { classifyDocument } from './doc-classify';
 
 export const BUCKET = 'rhc-documents';
 export function safeName(name: string) { return name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 180) || 'document'; }
@@ -51,11 +52,13 @@ export async function ingestDocument(i: IngestInput) {
     } catch { /* keep needs_ocr: the user can retry OCR from Documents */ }
   }
   const metadata = { original_name: i.name, size_bytes: i.bytes.byteLength, uploaded_at: new Date().toISOString(), extraction: extraction.method, bucket: BUCKET, pages: extraction.pages || null, ...(extraction.needsOcr ? { ocr: { status: (extraction as any).unclear ? 'unclear' : 'needed' } } : extraction.method.startsWith('ocr') || extraction.method.includes('tesseract') ? { ocr: { status: 'done', method: extraction.method } } : {}), ...(i.extraMeta || {}) };
+  const auto = i.category ? { category: null as string | null, confidence: 'low', reason: '' } : classifyDocument(i.name, extraction.text);
+  if (auto.category) (metadata as any).auto_category = { category: auto.category, confidence: auto.confidence, reason: auto.reason };
   const row: Record<string, any> = {
     name: i.name, mime_type: i.mimeType || 'application/octet-stream', project_id: i.projectId || null, deal_id: i.dealId || null,
     storage_path: path, source: i.source || 'upload', external_id: i.externalId || null, web_url: i.webUrl || null,
     external_modified_at: i.externalModifiedAt || null, content_text: extraction.text, status: extraction.status, metadata,
-    authority: i.authority || 'draft', category: i.category || null, updated_at: new Date().toISOString(),
+    authority: i.authority || 'draft', category: i.category || auto.category, updated_at: new Date().toISOString(),
   };
   let doc: any;
   if (i.existingId) {

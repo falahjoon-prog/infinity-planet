@@ -10,7 +10,7 @@ export const APP_NAME = 'Infinity Planet';
 export const APP_TAGLINE = 'Business Operating System';
 export const AI_NAME = 'Infinity AI';
 export const SEARCH_NAME = 'Infinity Search';
-export const APP_VERSION = '4.13.2';
+export const APP_VERSION = '4.14.0';
 
 export type BrandLogo = { path: string; mime: string; v: number } | null;
 export type Brand = { app_name: string; ai_name: string; business_name: string; short_name: string; logo: BrandLogo; logo_url: string | null };

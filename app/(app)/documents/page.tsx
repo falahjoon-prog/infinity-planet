@@ -1,5 +1,6 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
+import { DOC_CATEGORIES, categoryLabel } from '@/lib/doc-categories';
 import { useOpenWindow } from '@/lib/client/nav-history';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,7 +18,7 @@ import { ago, date, label, bytes } from '@/lib/client/format';
 export default function Page() { return <Suspense fallback={<Loading />}><Documents /></Suspense>; }
 
 function Documents() {
-  const sp = useSearchParams(); const router = useRouter();
+  const sp = useSearchParams(); const router = useRouter(); const toast = useToast();
   const [tab, setTab] = useState<'library' | 'search' | 'drive'>(sp.get('search') ? 'search' : sp.get('tab') === 'drive' ? 'drive' : 'library');
   const [upload, setUpload] = useState(sp.get('upload') === '1');
   const win = useOpenWindow(); // the open document lives in the address, so Back closes it and stays here
@@ -27,7 +28,7 @@ function Documents() {
   useEffect(() => { const t = sp.get('tab'); setTab(t === 'drive' || t === 'library' || t === 'search' ? t as any : sp.get('search') ? 'search' : 'library'); }, [sp]);
   return <>
     <PageHead title={tab === 'drive' ? 'Google Drive' : 'Library'}
-      actions={can.write && tab !== 'drive' && <Button variant="primary" icon={<Upload size={15} />} onClick={() => setUpload(true)}>Upload</Button>} />
+      actions={can.write && tab !== 'drive' && <div className="row" style={{ gap: 8 }}><Button icon={<Brain size={15} />} onClick={async () => { try { const r = await api.post('/api/documents/classify', {}); toast(r.sorted ? `Sorted ${r.sorted} document${r.sorted === 1 ? '' : 's'}` : 'Nothing new to sort', 'success'); setVer(v => v + 1); } catch (e: any) { toast(e.message, 'error'); } }}>Auto-sort</Button><Button variant="primary" icon={<Upload size={15} />} onClick={() => setUpload(true)}>Upload</Button></div>} />
     {tab !== 'drive' && <Library key={ver} onOpen={(id, q) => { setHl({ id, q }); win.open(id); }} reviewOnly={sp.get('review') === '1'} initialSearch={sp.get('search') || ''} />}
     {tab === 'drive' && <Drive onImported={() => setVer(v => v + 1)} onOpen={id => win.open(id)} />}
     <UploadDialog open={upload} onClose={() => setUpload(false)} onDone={rs => { if (rs?.some((r: any) => !r.error)) setVer(v => v + 1); }} />
@@ -43,7 +44,7 @@ function Library({ onOpen, reviewOnly, initialSearch }: { onOpen: (id: string, q
   const runInside = async () => { if (!q.trim()) return; setSearching(true); try { const r = await api.get(`/api/knowledge/search?q=${encodeURIComponent(q)}${project ? `&project_id=${project}` : ''}&limit=25`); setHits(r.results); } catch (e: any) { toast(e.message, 'error'); } finally { setSearching(false); } };
   useEffect(() => { if (initialSearch) runInside(); }, []); // eslint-disable-line
   const [authority, setAuthority] = useState(''); const [status, setStatus] = useState(''); const [review, setReview] = useState(reviewOnly ? 'unreviewed' : ''); const [source, setSource] = useState('');
-  const [editing, setEditing] = useState<any>(null); const [category, setCategory] = useState('');
+  const [editing, setEditing] = useState<any>(null); const [category, setCategory] = useState(''); const [seenForms, setSeenForms] = useState<string[]>([]);
   const [view, setView] = useState<'list' | 'grid'>(() => { try { return (localStorage.getItem('ip-docs-view') as any) || 'list'; } catch { return 'list'; } });
   const [sort, setSort] = useState('updated'); const [kind, setKind] = useState('');
   useEffect(() => { try { localStorage.setItem('ip-docs-view', view); } catch {} }, [view]);
@@ -53,6 +54,7 @@ function Library({ onOpen, reviewOnly, initialSearch }: { onOpen: (id: string, q
   const activeFilters = [project, authority, status, review, source, category, kind].filter(Boolean).length;
   const docs = (data?.documents || []).filter((d: any) => (mode === 'inside' || !q || d.name.toLowerCase().includes(q.toLowerCase())) && (!kind || KIND[kind]?.test(d.mime_type || '')))
     .sort((a: any, b: any) => sort === 'name' ? a.name.localeCompare(b.name) : sort === 'type' ? String(a.mime_type).localeCompare(String(b.mime_type)) || a.name.localeCompare(b.name) : sort === 'created' ? +new Date(b.created_at) - +new Date(a.created_at) : +new Date(b.updated_at) - +new Date(a.updated_at));
+  useEffect(() => { const f = (data?.documents || []).map((d: any) => d.category).filter((c: any) => typeof c === 'string' && /^form_/.test(c)); if (f.some((x: string) => !seenForms.includes(x))) setSeenForms(s => [...new Set([...s, ...f])]); }, [data]); // eslint-disable-line
   const isPdf = (d: any) => /pdf/.test(d.mime_type || '') || /\.pdf$/i.test(d.name);
   const canDelete = ['admin', 'director', 'manager', 'legal'].includes(me.role);
   const del = async (d: any) => { if (!(await confirm({ title: `Delete “${d.name}”?`, body: 'The file, its extracted text and search index are removed permanently.', confirm: 'Delete', danger: true }))) return; try { await api.del(`/api/documents/${d.id}`); toast('Deleted', 'success'); reload(); } catch (e: any) { toast(e.message, 'error'); } };
@@ -69,7 +71,7 @@ function Library({ onOpen, reviewOnly, initialSearch }: { onOpen: (id: string, q
     </div>
     {showFilters && <div className="lib-filters">
       <ProjectSelect value={project} onChange={setProject} noneLabel="All projects" className="select sm" />
-      <select className="select sm" value={category} onChange={e => setCategory(e.target.value)}><option value="">Any category</option>{DOC_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+      <select className="select sm" value={category} onChange={e => setCategory(e.target.value)}><option value="">Any category</option>{[...DOC_CATEGORIES, ...[...new Set([...seenForms, ...(category.startsWith('form_') ? [category] : [])])].sort().map(v => [v, categoryLabel(v)] as [string, string])].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
       <select className="select sm" value={kind} onChange={e => setKind(e.target.value)}><option value="">Any file type</option><option value="pdf">PDF</option><option value="image">Photos</option><option value="doc">Word & text</option><option value="sheet">Spreadsheets</option></select>
       <select className="select sm" value={source} onChange={e => setSource(e.target.value)}><option value="">From anywhere</option><option value="upload">Uploaded</option><option value="google_drive">Google Drive</option><option value="manual">Made in the app</option></select>
       <select className="select sm" value={review} onChange={e => setReview(e.target.value)}><option value="">Any review</option>{['unreviewed', 'awaiting_review', 'reviewed', 'approved', 'rejected'].map(s => <option key={s} value={s}>{label(s)}</option>)}</select>
@@ -84,12 +86,12 @@ function Library({ onOpen, reviewOnly, initialSearch }: { onOpen: (id: string, q
     {loading ? <Loading /> : docs.length === 0 ? <div className="card"><Empty icon={<Files size={20} />} title="No documents found">Upload PDFs, Word documents or text, or import from Google Drive.</Empty></div> : view === 'grid' ?
       <div className="card"><div className="file-grid">{docs.map((d: any) => <div key={d.id} className="file-tile" onClick={() => onOpen(d.id)}>
         <div className="thumb">{d.file_url && /^image\//.test(d.mime_type) ? <img src={d.file_url} alt="" loading="lazy" /> : d.file_url && isPdf(d) ? <PdfThumb url={d.file_url} /> : <FileText size={34} className="muted" />}</div>
-        <div className="name" title={d.name}>{d.name}</div><div className="tiny muted">{d.project?.name || 'Unassigned'} · {ago(d.updated_at)}</div>
+        <div className="name" title={d.name}>{d.name}</div><div className="tiny muted">{d.project?.name || 'Unassigned'} · {ago(d.updated_at)}</div>{d.category && <div><span className="badge" style={{ fontSize: 11 }}>{categoryLabel(d.category)}</span></div>}
         {can.write && isPdf(d) && d.has_file && <div className="row" style={{ gap: 4 }} onClick={e => e.stopPropagation()}><Link className="btn xs" href={`/pdf/${d.id}`}><PenTool size={11} /> Sign</Link><Link className="btn xs" href={`/pdf/${d.id}?mode=send`}><Send size={11} /> Send to sign</Link></div>}
       </div>)}</div></div> :
       <div className="card table-wrap"><table className="table"><thead><tr><th>Document</th><th>Authority</th><th>Review</th><th className="hide-sm">Index</th><th className="hide-sm">Project</th><th className="hide-sm">Updated</th><th /></tr></thead><tbody>
         {docs.map((d: any) => <tr key={d.id} className="clickable" onClick={() => onOpen(d.id)}>
-          <td style={{ maxWidth: 360 }}><div className="row" style={{ gap: 8 }}><FileText size={16} className="muted" /><div style={{ minWidth: 0 }}><b className="ellipsis" style={{ display: 'block' }}>{d.name}</b><div className="tiny muted">{d.source === 'google_drive' ? 'Google Drive' : d.uploader?.full_name || 'Upload'}{d.category ? ` · ${d.category === 'brand_book' ? '★ Brand book' : label(d.category)}` : ''}</div></div></div></td>
+          <td style={{ maxWidth: 360 }}><div className="row" style={{ gap: 8 }}><FileText size={16} className="muted" /><div style={{ minWidth: 0 }}><b className="ellipsis" style={{ display: 'block' }}>{d.name}</b><div className="tiny muted">{d.source === 'google_drive' ? 'Google Drive' : d.uploader?.full_name || 'Upload'}{d.category ? ` · ${categoryLabel(d.category)}` : ''}</div></div></div></td>
           <td><AuthorityBadge value={d.authority} /></td><td><StatusBadge value={d.review_status} /></td><td className="hide-sm"><StatusBadge value={d.status} /></td>
           <td className="hide-sm small">{d.project ? <Link className="link" href={`/projects/${d.project.id}`} onClick={e => e.stopPropagation()}>{d.project.name}</Link> : <span className="muted">—</span>}</td>
           <td className="hide-sm small muted nowrap">{ago(d.updated_at)}</td>
@@ -116,7 +118,8 @@ function EditDoc({ doc, onClose, onSaved }: { doc: any; onClose: () => void; onS
     <div className="stack" style={{ gap: 12 }}>
       <Field label="Name"><input className="input" value={f.name || ''} onChange={e => setF({ ...f, name: e.target.value })} /></Field>
       <Field label="Project"><ProjectSelect value={f.project_id} onChange={v => setF({ ...f, project_id: v })} /></Field>
-      <Field label="Category" hint="Brand book: the AI, marketing writer, Designer and letterhead follow it."><select className="select" value={f.category || ''} onChange={e => setF({ ...f, category: e.target.value })}><option value="">General</option>{DOC_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}{f.category && !DOC_CATEGORIES.some(([v]) => v === f.category) && <option value={f.category}>{f.category}</option>}</select></Field>
+      <Field label="Category" hint="Brand book: the AI, marketing writer, Designer and letterhead follow it."><select className="select" value={f.category || ''} onChange={e => setF({ ...f, category: e.target.value })}><option value="">General</option>{DOC_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}{f.category && !DOC_CATEGORIES.some(([v]) => v === f.category) && <option value={f.category}>{categoryLabel(f.category)}</option>}</select></Field>
+      <Field label="Or a form number" hint="For example 2, 6 or 30c files it as Form 2, Form 6 or Form 30C."><input className="input" placeholder="e.g. 6" value={/^form_/.test(f.category || '') ? String(f.category).slice(5) : ''} onChange={e => { const n = e.target.value.replace(/[^0-9a-zA-Z]/g, '').toLowerCase().slice(0, 5); setF({ ...f, category: n ? `form_${n}` : '' }); }} /></Field>
       <Field label="Authority" hint="A previously signed agreement is HISTORICAL PRECEDENT — never automatically approved.">
         <select className="select" value={f.authority} onChange={e => setF({ ...f, authority: e.target.value })}>{Object.entries(AUTHORITY_TEXT).map(([v, l]) => <option key={v} value={v} disabled={!canClassify && !['draft', 'historical_precedent'].includes(v)}>{l}</option>)}</select>
       </Field>
@@ -130,7 +133,6 @@ function highlight(text: string, q: string) {
   return text.split(re).map((p, i) => i % 2 ? <mark key={i}>{p}</mark> : p);
 }
 
-const DOC_CATEGORIES: [string, string][] = [['brand_book', '★ Brand book'], ['agreement', 'Agreement'], ['mou', 'MOU'], ['contract', 'Contract'], ['correspondence', 'Correspondence'], ['financial', 'Financial'], ['planning', 'Planning'], ['marketing', 'Marketing'], ['design', 'Design'], ['due_diligence', 'Due diligence'], ['report', 'Report'], ['template', 'Template'], ['board_minutes', 'Board meeting record']];
 
 function Drive({ onImported, onOpen }: { onImported: () => void; onOpen: (id: string) => void }) {
   const { status, can } = useApp(); const toast = useToast(); const confirm = useConfirm();
