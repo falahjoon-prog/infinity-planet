@@ -28,7 +28,8 @@ function filesOf(msgs: any[]) {
       if (!p) return;
       const cid = String(header(p.headers, 'Content-ID') || '').trim();
       const inlinePic = cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(String(header(p.headers, 'Content-Disposition') || ''));
-      if (p.filename && p.body?.attachmentId && !inlinePic && !JUNK.test(p.filename)) { const k = `${p.filename}:${p.body.size}`; if (!seen.has(k)) { seen.add(k); out.push({ filename: p.filename, size: p.body.size || 0 }); } }
+      // pasted screenshots/photos (named image.png, IMG_…) count as files; small embedded signature icons and image001-style pictures do not
+      if (p.filename && p.body?.attachmentId && (!inlinePic || (p.body.size || 0) > 15000) && !JUNK.test(p.filename)) { const k = `${p.filename}:${p.body.size}`; if (!seen.has(k)) { seen.add(k); out.push({ filename: p.filename, size: p.body.size || 0 }); } }
       (p.parts || []).forEach(walk);
     };
     walk(msg.payload);
