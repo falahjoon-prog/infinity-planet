@@ -8,7 +8,7 @@ import { getSupabaseAdmin } from './supabase';
 import { tidyEmailText } from './email-clean';
 import { stripQuoted, rankRelated, parseAddress, ThreadMessage, RelatedEmail } from './email-craft';
 
-export type FullThreadMessage = ThreadMessage & { id: string; threadId: string; messageId: string; references: string; cc?: string; attachments: { filename: string; mimeType: string; size: number }[] };
+export type FullThreadMessage = ThreadMessage & { id: string; threadId: string; messageId: string; references: string; cc?: string; attachments: { id?: string; filename: string; mimeType: string; size: number }[] };
 
 /** The Gmail API for one person's own mailbox (see mailClient). */
 export async function gmailApi(userId: string) { const { auth, mailbox, provider } = await mailClient(userId); return { gmail: google.gmail({ version: 'v1', auth }), mailbox: mailbox as string | null, provider }; }
@@ -16,7 +16,7 @@ export async function gmailApi(userId: string) { const { auth, mailbox, provider
 function toMsg(m: any): FullThreadMessage {
   const h = m.payload?.headers;
   const attachments: FullThreadMessage['attachments'] = [];
-  const walk = (p: any) => { if (!p) return; if (p.filename && p.body?.attachmentId) attachments.push({ filename: p.filename, mimeType: p.mimeType, size: p.body.size }); (p.parts || []).forEach(walk); };
+  const walk = (p: any) => { if (!p) return; const cid = String(header(p.headers, 'Content-ID') || '').trim(); const isPic = cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(String(header(p.headers, 'Content-Disposition') || '')); if (p.filename && p.body?.attachmentId && !isPic) attachments.push({ id: p.body.attachmentId, filename: p.filename, mimeType: p.mimeType, size: p.body.size }); (p.parts || []).forEach(walk); };
   walk(m.payload);
   return { id: m.id, threadId: m.threadId, from: header(h, 'From'), to: header(h, 'To'), cc: header(h, 'Cc'), subject: header(h, 'Subject'), date: header(h, 'Date'), messageId: header(h, 'Message-ID'), references: header(h, 'References'), body: tidyEmailText(decodeBody(m.payload).text).slice(0, 60_000), attachments };
 }

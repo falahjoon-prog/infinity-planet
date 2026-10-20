@@ -234,6 +234,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         <button onClick={() => setOpenIdx(openIdx === i ? null : i)}><b>{nameOf(x.from)}</b><span className="snip">{String(x.clean || x.body).replace(/\s+/g, ' ').slice(0, 140)}</span><span className="tiny muted nowrap">{fmtWhen(x.date)}</span></button>
         {openIdx === i && <EmailText className="msg-body" sender={nameOf(x.from)} text={x.clean || x.body} />}
       </div>)}</div>}
+      {earlier.some((x: any) => x.attachments?.length) && <div className="msg-earlier-files"><div className="tiny muted" style={{ margin: '10px 0 4px' }}>Files in earlier emails of this conversation</div>{earlier.filter((x: any) => x.attachments?.length).map((x: any) => <div key={x.id}><div className="tiny muted">{nameOf(x.from)} · {fmtWhen(x.date)}</div><AttachmentSummary m={{ id: x.id, attachments: x.attachments }} /></div>)}</div>}
       {ev && <EventCard e={ev} />}
       {original && m.html ? <EmailFrame html={m.html} showQuoted={quoted} />
         : (!ev || original) ? <EmailText className="msg-body" sender={nameOf(m.from)} text={(quoted ? full : clean) || '(no text body)'} /> : null}
