@@ -100,7 +100,8 @@ export async function mailClient(userId: string): Promise<MailClient> {
   ]);
   const exec = EXEC.includes(prof?.role);
   const shared = async (): Promise<MailClient> => { const c = await googleClient(); return { auth: c.auth, integration: c.integration, mailbox: (c.integration as any)?.account_email || null, kind: 'shared', provider: 'google' }; };
-  if (exec && choice === 'shared') return shared();
+  // Chose the shared mailbox but the company Google account isn't connected (yet)? Use their own mailbox instead of failing.
+  if (exec && choice === 'shared') { try { return await shared(); } catch (e) { if (!own?.encrypted_refresh_token) throw e; } }
   if (own?.encrypted_refresh_token) {
     const auth = googleOAuth(); auth.setCredentials({ refresh_token: decryptSecret(own.encrypted_refresh_token) });
     return { auth, integration: own, mailbox: own.account_email || null, kind: 'own', provider: own.provider };

@@ -25,16 +25,18 @@ export const GET = route(async (req: NextRequest, { params }) => {
   // Opening an email marks it as read (like Gmail)
   if ((m.labelIds || []).includes('UNREAD') && req.nextUrl.searchParams.get('mark') !== '0') gmail.users.messages.modify({ userId: 'me', id, requestBody: { removeLabelIds: ['UNREAD'] } }).catch(() => {});
   const attachments: { id: string; filename: string; mimeType: string; size: number }[] = [];
-  const inline: { cid: string; mime: string; data?: string | null; attachmentId?: string | null; size: number }[] = [];
+  const inline: { cid: string; mime: string; data?: string | null; attachmentId?: string | null; size: number; filename?: string }[] = [];
   const walk = (p: any) => {
     if (!p) return;
     const cid = String(header(p.headers, 'Content-ID') || '').replace(/[<>]/g, '').trim();
     const disp = String(header(p.headers, 'Content-Disposition') || '');
-    if (cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(disp)) inline.push({ cid, mime: p.mimeType, data: p.body?.data || null, attachmentId: p.body?.attachmentId || null, size: p.body?.size || 0 });
+    if (cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(disp)) inline.push({ cid, filename: p.filename || '', mime: p.mimeType, data: p.body?.data || null, attachmentId: p.body?.attachmentId || null, size: p.body?.size || 0 });
     else if (p.filename && p.body?.attachmentId) attachments.push({ id: p.body.attachmentId, filename: p.filename, mimeType: p.mimeType, size: p.body.size });
     (p.parts || []).forEach(walk);
   };
   walk(m.payload);
+  // A picture that has a Content-ID but is NOT used inside the email text is a real attachment (a photo, a drawing) — list it.
+  for (const im of inline) if (im.filename && im.attachmentId && !(html || '').includes(`cid:${im.cid}`)) attachments.push({ id: im.attachmentId, filename: im.filename, mimeType: im.mime, size: im.size });
   // Pictures inside the email (logos, signatures) are referenced as "cid:" — put the actual image in, like Gmail does.
   let fullHtml = html;
   if (fullHtml && inline.length) {

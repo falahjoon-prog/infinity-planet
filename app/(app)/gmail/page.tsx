@@ -241,7 +241,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         {(original ? m.html : !ev) && hasQuoted && <button className="link-quiet small" onClick={() => setQuoted(q => !q)}>{quoted ? 'Hide earlier messages' : '··· Show earlier messages'}</button>}
         {(m.html || ev) && <button className="link-quiet small" onClick={() => setOriginal(o => !o)}>{original ? 'Simple view' : ev ? 'Show full invitation' : 'Show original formatting'}</button>}
       </div>
-      {m.attachments.length > 0 && <div className="mail-atts"><div className="tiny muted">{m.attachments.length} attachment{m.attachments.length === 1 ? '' : 's'}</div><div className="mail-att-row">{m.attachments.map((a: any, i: number) => <button key={i} className="mail-att" title={`Download ${a.filename}`} onClick={async () => { try { const { blob } = await api.blob(`/api/google/gmail/${m.id}/attachments/${encodeURIComponent(a.id)}?name=${encodeURIComponent(a.filename)}&type=${encodeURIComponent(a.mimeType || '')}`); downloadBlob(blob, a.filename); } catch (e: any) { toast(e.message, 'error'); } }}><Paperclip size={15} /><span className="nm">{a.filename}</span><span className="sz">{bytes(a.size)}</span></button>)}</div></div>}
+      {m.attachments.length > 0 && <AttachmentSummary key={m.id} m={m} />}
     </div>
     {can.write && <div className="msg-actions">
       <Button variant="primary" icon={<Sparkles size={15} />} onClick={() => reply(true, true)}>AI reply</Button>
@@ -251,6 +251,49 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
     </div>}
   </div>;
 }
+
+const ATT_CATS: [string, string][] = [['', 'General'], ['agreement', 'Agreement'], ['mou', 'MOU'], ['contract', 'Contract'], ['correspondence', 'Correspondence'], ['financial', 'Financial'], ['planning', 'Planning'], ['marketing', 'Marketing'], ['design', 'Design'], ['due_diligence', 'Due diligence'], ['report', 'Report'], ['template', 'Template'], ['board_minutes', 'Board meeting record']];
+/** Attachments of an email: download, a short AI summary of each, and one click to file them in Documents (read + searchable). */
+function AttachmentSummary({ m }: { m: any }) {
+  const toast = useToast();
+  const [rows, setRows] = useState<any[] | null>(null); const [busy, setBusy] = useState<string | null>(null);
+  const items = (m.attachments || []).map((a: any) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, size: a.size }));
+  const url = `/api/google/gmail/${m.id}/file-attachments`;
+  const summarise = async () => { setBusy('s'); try { const r = await api.post(url, { action: 'suggest', items }); setRows(r.items); } catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); } };
+  const edit = (id: string, patch: any) => setRows(rs => (rs || []).map(r => (r.id === id ? { ...r, ...patch } : r)));
+  const save = async (list: any[]) => {
+    const todo = list.filter(r => !r.saved); if (!todo.length) return;
+    setBusy(todo.length === 1 ? todo[0].id : 'all');
+    try {
+      const r = await api.post(url, { action: 'save', items: todo.map(x => ({ id: x.id, filename: x.filename, mimeType: x.mimeType, summary: x.summary, category: x.category, project_id: x.project_id })) });
+      const ok = new Set((r.saved || []).map((s: any) => s.id));
+      setRows(rs => (rs || []).map(x => (ok.has(x.id) ? { ...x, saved: true } : x)));
+      toast(`${ok.size} saved to Documents${r.skipped?.length ? ` · ${r.skipped.length} skipped` : ''}`, 'success');
+    } catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); }
+  };
+  const download = async (a: any) => { try { const { blob } = await api.blob(`/api/google/gmail/${m.id}/attachments/${encodeURIComponent(a.id)}?name=${encodeURIComponent(a.filename)}&type=${encodeURIComponent(a.mimeType || '')}`); downloadBlob(blob, a.filename); } catch (e: any) { toast(e.message, 'error'); } };
+  return <div className="mail-atts">
+    <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}>
+      <div className="tiny muted">{m.attachments.length} attachment{m.attachments.length === 1 ? '' : 's'}</div>
+      <div className="row" style={{ gap: 6 }}>
+        {!rows && <Button size="sm" variant="ghost" loading={busy === 's'} onClick={summarise}><Sparkles size={14} /> Summarise &amp; file</Button>}
+        {rows && rows.some(r => !r.saved) && <Button size="sm" variant="primary" loading={busy === 'all'} onClick={() => save(rows)}>Save all to Documents</Button>}
+      </div>
+    </div>
+    {!rows && <div className="mail-att-row">{m.attachments.map((a: any, i: number) => <button key={i} className="mail-att" title={`Download ${a.filename}`} onClick={() => download(a)}><Paperclip size={15} /><span className="nm">{a.filename}</span><span className="sz">{bytes(a.size)}</span></button>)}</div>}
+    {rows && <div className="col" style={{ gap: 8 }}>{rows.map(r => <div key={r.id} className="card" style={{ padding: 10 }}>
+      <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><b className="ellipsis" style={{ minWidth: 0 }}><Paperclip size={13} /> {r.filename}</b><span className="tiny muted">{bytes(r.size)}</span></div>
+      <div className="small" style={{ margin: '4px 0 8px' }}>{r.summary}</div>
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+        <select className="select sm" disabled={r.saved} value={r.category || ''} onChange={e => edit(r.id, { category: e.target.value })}>{ATT_CATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+        <select className="select sm" disabled={r.saved} value={r.project_id || ''} onChange={e => edit(r.id, { project_id: e.target.value || null })}><option value="">No project</option><ProjectOptions /></select>
+        <Button size="sm" variant="ghost" onClick={() => download(r)}>Download</Button>
+        {r.saved ? <span className="tiny" style={{ color: 'var(--ok, #2f7d4f)' }}>✓ In Documents</span> : <Button size="sm" variant="primary" loading={busy === r.id} onClick={() => save([r])}>Save to Documents</Button>}
+      </div>
+    </div>)}</div>}
+  </div>;
+}
+
 function ProjectOptions() { const { projects } = useApp(); return <>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</>; }
 
 // ------------------------------------------------------------------ drafts / scheduled / sent
