@@ -18,7 +18,7 @@ function forgetThread(id?: string | null) { if (id) THREAD_CACHE.delete(id); els
 
 // What the list needs from each conversation: headers, labels and the names of attached files (not the file contents).
 const PART = 'mimeType,filename,headers,body(attachmentId,size)';
-const THREAD_FIELDS = `messages(id,threadId,labelIds,snippet,internalDate,payload(headers,mimeType,filename,body(attachmentId,size),parts(${PART},parts(${PART},parts(${PART},parts(${PART})))))`;
+const THREAD_FIELDS = `messages(id,threadId,labelIds,snippet,internalDate,payload(headers,mimeType,filename,body(attachmentId,size),parts(${PART},parts(${PART},parts(${PART},parts(${PART}))))))`;
 const JUNK = /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\d+)\.(png|jpe?g|gif|bmp)$/i;
 /** Real files attached anywhere in a conversation, newest first (signature pictures and embedded images left out). */
 function filesOf(msgs: any[]) {
