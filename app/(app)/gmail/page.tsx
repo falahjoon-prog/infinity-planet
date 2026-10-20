@@ -6,7 +6,7 @@ import { Translate } from '@/components/translate';
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Search, PenSquare, Reply, ReplyAll, Forward, Link2, Send, ShieldCheck, Wand2, Trash2, Paperclip, RefreshCw, Sparkles, Eye, Undo2, History, ChevronDown, ChevronRight, Star, Archive, MailOpen, Mail as MailClosed, Clock, X, Plus, FileText, BookmarkPlus, CalendarClock, Plane, SlidersHorizontal, Inbox as InboxIcon, Maximize2, ChevronsRight } from 'lucide-react';
+import { Mail, Search, PenSquare, Reply, ReplyAll, Forward, Link2, Send, ShieldCheck, Wand2, Trash2, Paperclip, RefreshCw, Sparkles, Eye, Undo2, History, ChevronDown, ChevronRight, Star, Archive, MailOpen, Mail as MailClosed, Clock, X, Plus, FileText, BookmarkPlus, CalendarClock, Plane, SlidersHorizontal, Inbox as InboxIcon, Maximize2, Maximize, Minimize, ChevronsRight } from 'lucide-react';
 import { api, useApi, downloadBlob } from '@/lib/client/api';
 import { useApp } from '@/components/app-context';
 import { ProjectSelect, ProviderSelect } from '@/components/pickers';
@@ -43,6 +43,8 @@ function Gmail() {
   const [tab, setTab] = useState<'inbox' | 'drafts' | 'autoreply'>(sp.get('tab') === 'drafts' ? 'drafts' : sp.get('tab') === 'autoreply' ? 'autoreply' : 'inbox');
   const [compose, setCompose] = useState<any>(sp.get('compose') === '1' ? { project_id: sp.get('project'), to_addresses: sp.get('to') || '' } : null);
   const win = useOpenWindow(); const openMsg = win.value; // the open email lives in the address, so Back closes it
+  useEffect(() => { if (!openMsg) document.documentElement.classList.remove('mail-full'); }, [openMsg]);
+  useEffect(() => () => document.documentElement.classList.remove('mail-full'), []);
   const [ver, setVer] = useState(0); const [inboxVer, setInboxVer] = useState(0);
   const [sendNow, setSendNow] = useState<any>(null);
   const [wide, setWide] = useState(true);
@@ -163,11 +165,14 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
   const { data: lk, reload: reloadLinks } = useApi<any>(m?.threadId ? `/api/email/links?thread_id=${m.threadId}` : null, [m?.threadId]);
   const [read, setRead] = useState<any>(null); const [reading, setReading] = useState(false); const [aiOpen, setAiOpen] = useState(false);
   const [project, setProject] = useState<string | null>(null); const [linkOpen, setLinkOpen] = useState(false); const [newProj, setNewProj] = useState<string | null>(null);
-  const [openIdx, setOpenIdx] = useState<number | null>(null); const [starred, setStarred] = useState(false); const [quoted, setQuoted] = useState(false); const [details, setDetails] = useState(false); const [original, setOriginal] = useState(false);
+  const [showEarlier, setShowEarlier] = useState(false); const [screenFull, setScreenFull] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('mail-full')); const [openIdx, setOpenIdx] = useState<number | null>(null); const [starred, setStarred] = useState(false); const [quoted, setQuoted] = useState(false); const [details, setDetails] = useState(false); const [original, setOriginal] = useState(false);
   // Designed emails (newsletters, notifications, anything with layout, images or links) show as the sender laid them out; plain personal emails show as clean text.
   // Emails show as the sender laid them out (pictures, links, signature), like Gmail and Outlook. "Simple view" gives clean text.
   useEffect(() => { setOriginal(!!m?.html && !m?.event); setQuoted(false); }, [id, m?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setRead(null); setStarred(!!m?.labels?.includes('STARRED')); if (!m?.threadId) return; setReading(true); api.post('/api/email/read', { thread_id: m.threadId }).then(r => { setRead(r); if (r.project?.id) setProject(p => p || r.project.id); }).catch(() => {}).finally(() => setReading(false)); }, [m?.threadId]);
+  useEffect(() => { setShowEarlier(false); }, [id]);
+  const toggleFull = () => { const on = document.documentElement.classList.toggle('mail-full'); setScreenFull(on); };
+  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && document.documentElement.classList.contains('mail-full')) { document.documentElement.classList.remove('mail-full'); setScreenFull(false); } }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, []);
   if (loading) return <Loading />;
   if (error) return <div style={{ padding: 16 }}><ErrorNote error={error} /></div>;
   if (!m) return null;
@@ -182,6 +187,8 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
   const hasQuoted = clean.trim().length < full.trim().length - 20;
   const ev = m.event;
   const earlier = msgs.filter(x => x.id !== m.id);
+  const earlierFiles = earlier.filter((x: any) => realFiles(x.attachments).length > 0);
+  const myIdx = msgs.findIndex(x => x.id === m.id); const isLatest = myIdx === msgs.length - 1;
   const reply = (all: boolean, auto: boolean) => {
     const rt = read?.reply_to; const to = rt?.to || addr(m.from);
     const cc = all ? (rt?.cc || [m.to, m.cc].join(',').split(',').map((x: string) => x.trim()).filter((x: string) => x && addr(x) !== to).join(', ')) : '';
@@ -198,6 +205,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         <button className="icon-btn" title="Mark as unread" onClick={() => act('unread')}><MailClosed size={16} /></button>
         <button className="icon-btn" title="Archive" onClick={() => act('archive')}><Archive size={16} /></button>
         <button className="icon-btn" title="Delete" onClick={() => act('trash')}><Trash2 size={16} /></button></>}
+        <button className="icon-btn" title={screenFull ? 'Leave full screen (Esc)' : 'Full screen: the whole window, email list stays on the left'} onClick={toggleFull}>{screenFull ? <Minimize size={16} /> : <Maximize size={16} />}</button>
         <button className="icon-btn mail-wide-btn" title="Wide reading: shrink the menu and the email list to icons (click again to bring them back)" onClick={toggleWideReading}><Maximize2 size={16} /></button>
         <button className="icon-btn" title="Close" onClick={onClose}><X size={17} /></button>
       </div>
@@ -210,7 +218,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
           <button className="link-quiet small" onClick={() => setDetails(d => !d)}>to {recipients.slice(0, 3).join(', ')}{recipients.length > 3 ? ` +${recipients.length - 3}` : ''} {details ? '▴' : '▾'}</button>
           {details && <div className="tiny muted" style={{ marginTop: 4 }}><div>To: {m.to}</div>{m.cc && <div>Cc: {m.cc}</div>}</div>}
         </div>
-        <span className="small muted nowrap">{fmtWhen(m.date)}</span>
+        <span className="small muted nowrap">{earlier.length > 0 && <b style={{ color: isLatest ? 'var(--ok, #2f7d4f)' : 'inherit' }}>{isLatest ? 'Latest email' : `Email ${myIdx + 1} of ${msgs.length}`} · </b>}{fmtWhen(m.date)}</span>
       </div>
       <div className={`ai-strip${aiOpen ? ' open' : ''}`}>
         <button className="ai-strip-line" onClick={() => setAiOpen(o => !o)} aria-expanded={aiOpen}>
@@ -230,11 +238,6 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
           : <span className="row" style={{ gap: 6 }}><input className="input sm" style={{ width: 240 }} autoFocus value={newProj} onChange={e => setNewProj(e.target.value)} placeholder="Project name" /><Button size="xs" variant="primary" onClick={createAndLink}>Create & link</Button><Button size="xs" variant="ghost" onClick={() => setNewProj(null)}>Cancel</Button></span>)}
         <span className="spacer" /><Translate text={clean} />
       </div>
-      {earlier.length > 0 && <div className="msg-earlier">{earlier.map((x: any, i: number) => <div key={x.id} className={`earlier-item${openIdx === i ? ' open' : ''}`}>
-        <button onClick={() => setOpenIdx(openIdx === i ? null : i)}><b>{nameOf(x.from)}</b><span className="snip">{String(x.clean || x.body).replace(/\s+/g, ' ').slice(0, 140)}</span><span className="tiny muted nowrap">{fmtWhen(x.date)}</span></button>
-        {openIdx === i && <EmailText className="msg-body" sender={nameOf(x.from)} text={x.clean || x.body} />}
-      </div>)}</div>}
-      {earlier.some((x: any) => x.attachments?.length) && <div className="msg-earlier-files"><div className="tiny muted" style={{ margin: '10px 0 4px' }}>Files in earlier emails of this conversation</div>{earlier.filter((x: any) => x.attachments?.length).map((x: any) => <div key={x.id}><div className="tiny muted">{nameOf(x.from)} · {fmtWhen(x.date)}</div><AttachmentSummary m={{ id: x.id, attachments: x.attachments }} /></div>)}</div>}
       {ev && <EventCard e={ev} />}
       {original && m.html ? <EmailFrame html={m.html} showQuoted={quoted} />
         : (!ev || original) ? <EmailText className="msg-body" sender={nameOf(m.from)} text={(quoted ? full : clean) || '(no text body)'} /> : null}
@@ -243,6 +246,13 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         {(m.html || ev) && <button className="link-quiet small" onClick={() => setOriginal(o => !o)}>{original ? 'Simple view' : ev ? 'Show full invitation' : 'Show original formatting'}</button>}
       </div>
       {m.attachments.length > 0 && <AttachmentSummary key={m.id} m={m} />}
+      {earlier.length > 0 && <div className="msg-earlier-wrap" style={{ marginTop: 14 }}><button className="link-quiet small" onClick={() => setShowEarlier(v => !v)}>{showEarlier ? '▴' : '▾'} {earlier.length} other email{earlier.length === 1 ? '' : 's'} in this conversation</button>{showEarlier && <>
+{earlier.length > 0 && <div className="msg-earlier">{earlier.map((x: any, i: number) => <div key={x.id} className={`earlier-item${openIdx === i ? ' open' : ''}`}>
+        <button onClick={() => setOpenIdx(openIdx === i ? null : i)}><b>{nameOf(x.from)}</b><span className="snip">{String(x.clean || x.body).replace(/\s+/g, ' ').slice(0, 140)}</span><span className="tiny muted nowrap">{fmtWhen(x.date)}</span></button>
+        {openIdx === i && <EmailText className="msg-body" sender={nameOf(x.from)} text={x.clean || x.body} />}
+      </div>)}</div>}
+{earlierFiles.length > 0 && <div className="msg-earlier-files"><div className="tiny muted" style={{ margin: '10px 0 4px' }}>Files in earlier emails of this conversation</div>{earlierFiles.map((x: any) => <div key={x.id}><div className="tiny muted">{nameOf(x.from)} · {fmtWhen(x.date)}</div><AttachmentSummary m={{ id: x.id, attachments: x.attachments }} /></div>)}</div>}
+</>}</div>}
     </div>
     {can.write && <div className="msg-actions">
       <Button variant="primary" icon={<Sparkles size={15} />} onClick={() => reply(true, true)}>AI reply</Button>
@@ -253,12 +263,16 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
   </div>;
 }
 
+/** Outlook's signature pictures and Word leftovers (image001.png, ~WRD0002.jpg …) are not real files. */
+const isJunkPic = (a: any) => /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\d+)\.(png|jpe?g|gif|bmp)$/i.test(String(a?.filename || ''));
+const realFiles = (list: any[]) => { const seen = new Set<string>(); return (list || []).filter(a => { if (isJunkPic(a)) return false; const k = `${a.filename}:${a.size}`; if (seen.has(k)) return false; seen.add(k); return true; }); };
 const ATT_CATS: [string, string][] = [['', 'General'], ['agreement', 'Agreement'], ['mou', 'MOU'], ['contract', 'Contract'], ['correspondence', 'Correspondence'], ['financial', 'Financial'], ['planning', 'Planning'], ['marketing', 'Marketing'], ['design', 'Design'], ['due_diligence', 'Due diligence'], ['report', 'Report'], ['template', 'Template'], ['board_minutes', 'Board meeting record']];
 /** Attachments of an email: download, a short AI summary of each, and one click to file them in Documents (read + searchable). */
 function AttachmentSummary({ m }: { m: any }) {
   const toast = useToast();
   const [rows, setRows] = useState<any[] | null>(null); const [busy, setBusy] = useState<string | null>(null);
-  const items = (m.attachments || []).map((a: any) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, size: a.size }));
+  const atts = realFiles(m.attachments);
+  const items = atts.map((a: any) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, size: a.size }));
   const url = `/api/google/gmail/${m.id}/file-attachments`;
   const summarise = async () => { setBusy('s'); try { const r = await api.post(url, { action: 'suggest', items }); setRows(r.items); } catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); } };
   const edit = (id: string, patch: any) => setRows(rs => (rs || []).map(r => (r.id === id ? { ...r, ...patch } : r)));
@@ -273,15 +287,16 @@ function AttachmentSummary({ m }: { m: any }) {
     } catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); }
   };
   const download = async (a: any) => { try { const { blob } = await api.blob(`/api/google/gmail/${m.id}/attachments/${encodeURIComponent(a.id)}?name=${encodeURIComponent(a.filename)}&type=${encodeURIComponent(a.mimeType || '')}`); downloadBlob(blob, a.filename); } catch (e: any) { toast(e.message, 'error'); } };
+  if (!atts.length) return null;
   return <div className="mail-atts">
     <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}>
-      <div className="tiny muted">{m.attachments.length} attachment{m.attachments.length === 1 ? '' : 's'}</div>
+      <div className="tiny muted">{atts.length} attachment{atts.length === 1 ? '' : 's'}</div>
       <div className="row" style={{ gap: 6 }}>
         {!rows && <Button size="sm" variant="ghost" loading={busy === 's'} onClick={summarise}><Sparkles size={14} /> Summarise &amp; file</Button>}
         {rows && rows.some(r => !r.saved) && <Button size="sm" variant="primary" loading={busy === 'all'} onClick={() => save(rows)}>Save all to Documents</Button>}
       </div>
     </div>
-    {!rows && <div className="mail-att-row">{m.attachments.map((a: any, i: number) => <button key={i} className="mail-att" title={`Download ${a.filename}`} onClick={() => download(a)}><Paperclip size={15} /><span className="nm">{a.filename}</span><span className="sz">{bytes(a.size)}</span></button>)}</div>}
+    {!rows && <div className="mail-att-row">{atts.map((a: any, i: number) => <button key={i} className="mail-att" title={`Download ${a.filename}`} onClick={() => download(a)}><Paperclip size={15} /><span className="nm">{a.filename}</span><span className="sz">{bytes(a.size)}</span></button>)}</div>}
     {rows && <div className="col" style={{ gap: 8 }}>{rows.map(r => <div key={r.id} className="card" style={{ padding: 10 }}>
       <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><b className="ellipsis" style={{ minWidth: 0 }}><Paperclip size={13} /> {r.filename}</b><span className="tiny muted">{bytes(r.size)}</span></div>
       <div className="small" style={{ margin: '4px 0 8px' }}>{r.summary}</div>

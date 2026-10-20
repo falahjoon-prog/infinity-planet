@@ -16,7 +16,7 @@ export async function gmailApi(userId: string) { const { auth, mailbox, provider
 function toMsg(m: any): FullThreadMessage {
   const h = m.payload?.headers;
   const attachments: FullThreadMessage['attachments'] = [];
-  const walk = (p: any) => { if (!p) return; const cid = String(header(p.headers, 'Content-ID') || '').trim(); const isPic = cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(String(header(p.headers, 'Content-Disposition') || '')); if (p.filename && p.body?.attachmentId && !isPic && !(/^image\//.test(p.mimeType || '') && /^image\d{3}\.\w+$/i.test(p.filename))) attachments.push({ id: p.body.attachmentId, filename: p.filename, mimeType: p.mimeType, size: p.body.size }); (p.parts || []).forEach(walk); };
+  const walk = (p: any) => { if (!p) return; const cid = String(header(p.headers, 'Content-ID') || '').trim(); const isPic = cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(String(header(p.headers, 'Content-Disposition') || '')); if (p.filename && p.body?.attachmentId && !isPic && !(/^image\//.test(p.mimeType || '') && /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\d+)\.\w+$/i.test(p.filename))) attachments.push({ id: p.body.attachmentId, filename: p.filename, mimeType: p.mimeType, size: p.body.size }); (p.parts || []).forEach(walk); };
   walk(m.payload);
   return { id: m.id, threadId: m.threadId, from: header(h, 'From'), to: header(h, 'To'), cc: header(h, 'Cc'), subject: header(h, 'Subject'), date: header(h, 'Date'), messageId: header(h, 'Message-ID'), references: header(h, 'References'), body: tidyEmailText(decodeBody(m.payload).text).slice(0, 60_000), attachments };
 }
