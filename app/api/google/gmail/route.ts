@@ -19,22 +19,19 @@ function forgetThread(id?: string | null) { if (id) THREAD_CACHE.delete(id); els
 // What the list needs from each conversation: headers, labels and the names of attached files (not the file contents).
 const PART = 'mimeType,filename,headers,body(attachmentId,size)';
 const THREAD_FIELDS = `messages(id,threadId,labelIds,snippet,internalDate,payload(headers,mimeType,filename,body(attachmentId,size),parts(${PART},parts(${PART},parts(${PART},parts(${PART}))))))`;
-const JUNK = /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\d+)\.(png|jpe?g|gif|bmp)$/i;
-/** Real files attached anywhere in a conversation, newest first (signature pictures and embedded images left out). */
+/** Every file attached anywhere in a conversation (documents first, then pictures), like Gmail's chips. */
 function filesOf(msgs: any[]) {
   const out: { filename: string; size: number }[] = []; const seen = new Set<string>();
   for (const msg of [...msgs].reverse()) {
     const walk = (p: any) => {
       if (!p) return;
-      const cid = String(header(p.headers, 'Content-ID') || '').trim();
-      const inlinePic = cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(String(header(p.headers, 'Content-Disposition') || ''));
-      // pasted screenshots/photos (named image.png, IMG_…) count as files; small embedded signature icons and image001-style pictures do not
-      if (p.filename && p.body?.attachmentId && (!inlinePic || (p.body.size || 0) > 15000) && !JUNK.test(p.filename)) { const k = `${p.filename}:${p.body.size}`; if (!seen.has(k)) { seen.add(k); out.push({ filename: p.filename, size: p.body.size || 0 }); } }
+      if (p.filename && p.body?.attachmentId) { const k = `${p.filename}:${p.body.size}`; if (!seen.has(k)) { seen.add(k); out.push({ filename: p.filename, size: p.body.size || 0 }); } }
       (p.parts || []).forEach(walk);
     };
     walk(msg.payload);
   }
-  return out;
+  const isPic = (f: { filename: string }) => /\.(png|jpe?g|gif|bmp|webp)$/i.test(f.filename);
+  return [...out.filter(f => !isPic(f)), ...out.filter(isPic)]; // documents first, then pictures
 }
 
 export const GET = route(async (req: NextRequest) => {
@@ -83,7 +80,7 @@ export const GET = route(async (req: NextRequest) => {
         starred: (m.labelIds || []).includes('STARRED'), important: (m.labelIds || []).includes('IMPORTANT'),
         from: header(h, 'From'), to: header(h, 'To'), subject: header(h, 'Subject'), date: header(h, 'Date'),
         internalDate: m.internalDate ? new Date(Number(m.internalDate)).toISOString() : null,
-        files: filesOf(threads.get(m.threadId!) || []).slice(0, 6), state: st.state, state_label: st.label, state_at: st.at, state_by: st.by || null, thread_count: (threads.get(m.threadId!) || []).length,
+        files: filesOf(threads.get(m.threadId!) || []).slice(0, 12), state: st.state, state_label: st.label, state_at: st.at, state_by: st.by || null, thread_count: (threads.get(m.threadId!) || []).length,
         projects: (links || []).filter((l: any) => l.gmail_message_id === m.id).map((l: any) => ({ id: l.project_id, name: l.project?.name })),
       };
     }),
