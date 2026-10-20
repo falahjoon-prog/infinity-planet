@@ -16,6 +16,26 @@ const THREAD_CACHE: Map<string, { at: number; messages: any[] }> = g.__ipThreadC
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function forgetThread(id?: string | null) { if (id) THREAD_CACHE.delete(id); else THREAD_CACHE.clear(); }
 
+// What the list needs from each conversation: headers, labels and the names of attached files (not the file contents).
+const PART = 'mimeType,filename,headers,body(attachmentId,size)';
+const THREAD_FIELDS = `messages(id,threadId,labelIds,snippet,internalDate,payload(headers,mimeType,filename,body(attachmentId,size),parts(${PART},parts(${PART},parts(${PART},parts(${PART})))))`;
+const JUNK = /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\d+)\.(png|jpe?g|gif|bmp)$/i;
+/** Real files attached anywhere in a conversation, newest first (signature pictures and embedded images left out). */
+function filesOf(msgs: any[]) {
+  const out: { filename: string; size: number }[] = []; const seen = new Set<string>();
+  for (const msg of [...msgs].reverse()) {
+    const walk = (p: any) => {
+      if (!p) return;
+      const cid = String(header(p.headers, 'Content-ID') || '').trim();
+      const inlinePic = cid && /^image\//.test(p.mimeType || '') && !/^attachment/i.test(String(header(p.headers, 'Content-Disposition') || ''));
+      if (p.filename && p.body?.attachmentId && !inlinePic && !JUNK.test(p.filename)) { const k = `${p.filename}:${p.body.size}`; if (!seen.has(k)) { seen.add(k); out.push({ filename: p.filename, size: p.body.size || 0 }); } }
+      (p.parts || []).forEach(walk);
+    };
+    walk(msg.payload);
+  }
+  return out;
+}
+
 export const GET = route(async (req: NextRequest) => {
   const actor = await getActor(req);
   const sp = req.nextUrl.searchParams;
@@ -32,7 +52,7 @@ export const GET = route(async (req: NextRequest) => {
   await inPool(threadIds, 4, async t => {
     const c = THREAD_CACHE.get(t);
     if (!fresh && c && Date.now() - c.at < 45_000) { threads.set(t, c.messages); return; }
-    const msgs = await googleCall(provider, () => gmail.users.threads.get({ userId: 'me', id: t, format: 'metadata', metadataHeaders: H })).then(r => r.data.messages || []).catch(() => [] as any[]);
+    const msgs = await googleCall(provider, () => gmail.users.threads.get({ userId: 'me', id: t, format: 'full', fields: THREAD_FIELDS })).then(r => r.data.messages || []).catch(() => [] as any[]);
     threads.set(t, msgs); THREAD_CACHE.set(t, { at: Date.now(), messages: msgs });
     if (THREAD_CACHE.size > 600) { const old = [...THREAD_CACHE.entries()].sort((a, b) => a[1].at - b[1].at).slice(0, 200); old.forEach(([k]) => THREAD_CACHE.delete(k)); }
   });
@@ -62,7 +82,7 @@ export const GET = route(async (req: NextRequest) => {
         starred: (m.labelIds || []).includes('STARRED'), important: (m.labelIds || []).includes('IMPORTANT'),
         from: header(h, 'From'), to: header(h, 'To'), subject: header(h, 'Subject'), date: header(h, 'Date'),
         internalDate: m.internalDate ? new Date(Number(m.internalDate)).toISOString() : null,
-        state: st.state, state_label: st.label, state_at: st.at, state_by: st.by || null, thread_count: (threads.get(m.threadId!) || []).length,
+        files: filesOf(threads.get(m.threadId!) || []).slice(0, 6), state: st.state, state_label: st.label, state_at: st.at, state_by: st.by || null, thread_count: (threads.get(m.threadId!) || []).length,
         projects: (links || []).filter((l: any) => l.gmail_message_id === m.id).map((l: any) => ({ id: l.project_id, name: l.project?.name })),
       };
     }),

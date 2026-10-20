@@ -138,6 +138,7 @@ function Inbox({ onOpen, selected }: { onOpen: (id: string) => void; selected: s
           <div className="line1"><span className="from">{nameOf(m.from)}</span>{m.thread_count > 1 && <span className="tiny muted">{m.thread_count}</span>}{m.starred && <Star size={12} fill="#e3a008" color="#e3a008" />}<span className="spacer" /><span className="when" title={fmtWhen(m.internalDate)}>{ago(m.internalDate)}</span></div>
           <div className="subj">{m.subject || '(no subject)'}</div>
           <div className="line3"><span className="state-chip" style={{ color: st.color, background: st.bg }} title={m.state_by ? `${st.label} — ${m.state_by}` : st.label}>{m.state_label || st.label}{m.state === 'replied' && m.state_by ? ` · ${m.state_by.split(' ')[0]}` : ''}</span>{m.projects?.map((p: any) => <span key={p.id} className="proj-chip">{p.name}</span>)}<span className="snip">{decode(m.snippet)}</span></div>
+          {m.files?.length > 0 && <div className="row-files">{m.files.slice(0, 3).map((f: any, i: number) => <span key={i} className="att-chip" title={f.filename}><Paperclip size={11} /><span className="nm">{f.filename}</span></span>)}{m.files.length > 3 && <span className="att-chip more">+{m.files.length - 3}</span>}</div>}
         </div>
         {can.write && <div className="mail-actions" onClick={e => e.stopPropagation()}>
           <button className="icon-btn" title={m.starred ? 'Unstar' : 'Star'} onClick={() => act(m, m.starred ? 'unstar' : 'star')}><Star size={13} /></button>

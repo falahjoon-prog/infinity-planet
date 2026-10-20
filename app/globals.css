@@ -2079,3 +2079,9 @@ i.in, .fin-legend i.in { background: var(--teal, #0f766e); } i.out, .fin-legend 
 
 /* Gmail full screen: the email list and the open email fill the whole window (Esc or the button leaves it) */
 html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; height: auto !important; max-height: none; min-height: 0; padding: 10px; background: var(--bg); }
+
+/* Attachment chips on inbox rows (like Gmail) */
+.row-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.att-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 190px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: calc(11.5px * var(--fs, 1)); line-height: 1.5; }
+.att-chip .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-chip.more { color: var(--muted, #667085); }
