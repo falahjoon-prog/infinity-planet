@@ -48,5 +48,5 @@ export const GET = route(async (req: NextRequest, { params }) => {
       } catch {}
     }
   }
-  return ok({ message: { id: m.id, threadId: m.threadId, from: header(h, 'From'), to: header(h, 'To'), cc: header(h, 'Cc'), subject: header(h, 'Subject'), references: header(h, 'References'), date: header(h, 'Date'), messageId: header(h, 'Message-ID'), body: text.slice(0, 100_000), clean_text: tidyEmailText(text).slice(0, 100_000), html: sanitizeEmailHtml(fullHtml), event, attachments: event ? attachments.filter(a => !/\.ics$/i.test(a.filename)) : attachments, labels: m.labelIds || [] } });
+  return ok({ message: { id: m.id, threadId: m.threadId, from: header(h, 'From'), to: header(h, 'To'), cc: header(h, 'Cc'), subject: header(h, 'Subject'), references: header(h, 'References'), date: header(h, 'Date'), messageId: header(h, 'Message-ID'), body: text.slice(0, 100_000), clean_text: tidyEmailText(text).slice(0, 100_000), html: sanitizeEmailHtml(fullHtml), event, attachments: (event ? attachments.filter(a => !/\.ics$/i.test(a.filename)) : attachments).filter(a => !(/^image\//.test(a.mimeType || '') && /^image\d{3}\.\w+$/i.test(a.filename || ''))), // Outlook's signature pictures (image001.png…) are not real files labels: m.labelIds || [] } });
 });
