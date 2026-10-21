@@ -166,7 +166,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
   const { data: lk, reload: reloadLinks } = useApi<any>(m?.threadId ? `/api/email/links?thread_id=${m.threadId}` : null, [m?.threadId]);
   const [read, setRead] = useState<any>(null); const [reading, setReading] = useState(false); const [aiOpen, setAiOpen] = useState(false);
   const [project, setProject] = useState<string | null>(null); const [linkOpen, setLinkOpen] = useState(false); const [newProj, setNewProj] = useState<string | null>(null);
-  const [showEarlier, setShowEarlier] = useState(false); const [screenFull, setScreenFull] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('mail-full')); const [openIdx, setOpenIdx] = useState<number | null>(null); const [starred, setStarred] = useState(false); const [quoted, setQuoted] = useState(false); const [details, setDetails] = useState(false); const [original, setOriginal] = useState(false);
+  const [showEarlier, setShowEarlier] = useState(false); const [alsoFile, setAlsoFile] = useState(true); const [screenFull, setScreenFull] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('mail-full')); const [openIdx, setOpenIdx] = useState<number | null>(null); const [starred, setStarred] = useState(false); const [quoted, setQuoted] = useState(false); const [details, setDetails] = useState(false); const [original, setOriginal] = useState(false);
   // Designed emails (newsletters, notifications, anything with layout, images or links) show as the sender laid them out; plain personal emails show as clean text.
   // Emails show as the sender laid them out (pictures, links, signature), like Gmail and Outlook. "Simple view" gives clean text.
   useEffect(() => { setOriginal(!!m?.html && !m?.event); setQuoted(false); }, [id, m?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -178,7 +178,9 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
   if (error) return <div style={{ padding: 16 }}><ErrorNote error={error} /></div>;
   if (!m) return null;
   const linked: any[] = lk?.links || [];
-  const link = async (pid?: string) => { const p = pid || project; if (!p) return; try { await api.post('/api/email/links', { gmail_message_id: m.id, thread_id: m.threadId, project_id: p, subject: m.subject, from: m.from, snippet: m.body.slice(0, 200), date: m.date }); toast('Linked to the project', 'success'); setLinkOpen(false); reloadLinks(); onChanged(); } catch (e: any) { toast(e.message, 'error'); } };
+  const link = async (pid?: string) => { const p = pid || project; if (!p) return; try { await api.post('/api/email/links', { gmail_message_id: m.id, thread_id: m.threadId, project_id: p, subject: m.subject, from: m.from, snippet: m.body.slice(0, 200), date: m.date }); const files = realFiles(m.attachments);
+      if (alsoFile && files.length) { try { const r = await api.post(`/api/google/gmail/${m.id}/file-attachments`, { action: 'save', items: files.map((a: any) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, project_id: p })) }); toast(`${(r.saved || []).length} attachment${(r.saved || []).length === 1 ? '' : 's'} filed to the project`, 'success'); } catch (e: any) { toast(e.message, 'error'); } }
+      toast('Linked to the project', 'success'); setLinkOpen(false); reloadLinks(); onChanged(); } catch (e: any) { toast(e.message, 'error'); } };
   const createAndLink = async () => { if (!newProj?.trim()) return; try { const r = await api.post('/api/projects', { name: newProj.trim() }); refreshProjects(); setNewProj(null); await link(r.project.id); } catch (e: any) { toast(e.message, 'error'); } };
   const act = async (action: string) => { try { await api.post(`/api/google/gmail/${m.id}/modify`, { action }); if (action === 'star' || action === 'unstar') setStarred(action === 'star'); else { toast(action === 'trash' ? 'Moved to Gmail trash' : action === 'archive' ? 'Archived' : 'Marked as unread', 'success'); onChanged(); onClose(); } } catch (e: any) { toast(e.message, 'error'); } };
   const msgs: any[] = th?.messages || [m];
@@ -235,10 +237,11 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
       <div className="msg-meta-row">
         {linked.map((l: any) => <Link key={l.id} href={`/projects/${l.project_id}`} className="proj-chip"><Link2 size={11} /> {l.project?.name || 'Project'}</Link>)}
         {can.write && !linkOpen && <button className="chip-btn" onClick={() => setLinkOpen(true)}><Plus size={12} /> {linked.length ? 'Link another project' : 'Link to project'}</button>}
-        {linkOpen && (newProj === null ? <span className="row" style={{ gap: 6 }}><select className="select sm" style={{ width: 220 }} value={project || ''} onChange={e => { if (e.target.value === '__new') { setNewProj(String(m.subject || '').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i, '').slice(0, 80)); return; } setProject(e.target.value || null); }}><option value="">Choose a project…</option><ProjectOptions /><option value="__new">＋ New project from this email…</option></select><Button size="xs" variant="primary" disabled={!project} onClick={() => link()}>Link</Button><Button size="xs" variant="ghost" onClick={() => setLinkOpen(false)}>Cancel</Button></span>
+        {linkOpen && (newProj === null ? <span className="row" style={{ gap: 6 }}><select className="select sm" style={{ width: 220 }} value={project || ''} onChange={e => { if (e.target.value === '__new') { setNewProj(String(m.subject || '').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i, '').slice(0, 80)); return; } setProject(e.target.value || null); }}><option value="">Choose a project…</option><ProjectOptions /><option value="__new">＋ New project from this email…</option></select>{realFiles(m.attachments).length > 0 && <label className="check small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}><input type="checkbox" checked={alsoFile} onChange={e => setAlsoFile(e.target.checked)} /> Also file the {realFiles(m.attachments).length} attachment{realFiles(m.attachments).length === 1 ? '' : 's'} to this project</label>}<Button size="xs" variant="primary" disabled={!project} onClick={() => link()}>Link</Button><Button size="xs" variant="ghost" onClick={() => setLinkOpen(false)}>Cancel</Button></span>
           : <span className="row" style={{ gap: 6 }}><input className="input sm" style={{ width: 240 }} autoFocus value={newProj} onChange={e => setNewProj(e.target.value)} placeholder="Project name" /><Button size="xs" variant="primary" onClick={createAndLink}>Create & link</Button><Button size="xs" variant="ghost" onClick={() => setNewProj(null)}>Cancel</Button></span>)}
         <span className="spacer" /><Translate text={clean} />
       </div>
+      {m.attachments.length > 0 && <AttachmentSummary key={m.id} m={m} />}
       {ev && <EventCard e={ev} />}
       {original && m.html ? <EmailFrame html={m.html} showQuoted={quoted} />
         : (!ev || original) ? <EmailText className="msg-body" sender={nameOf(m.from)} text={(quoted ? full : clean) || '(no text body)'} /> : null}
@@ -246,7 +249,6 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         {(original ? m.html : !ev) && hasQuoted && <button className="link-quiet small" onClick={() => setQuoted(q => !q)}>{quoted ? 'Hide earlier messages' : '··· Show earlier messages'}</button>}
         {(m.html || ev) && <button className="link-quiet small" onClick={() => setOriginal(o => !o)}>{original ? 'Simple view' : ev ? 'Show full invitation' : 'Show original formatting'}</button>}
       </div>
-      {m.attachments.length > 0 && <AttachmentSummary key={m.id} m={m} />}
       {earlier.length > 0 && <div className="msg-earlier-wrap" style={{ marginTop: 14 }}><button className="link-quiet small" onClick={() => setShowEarlier(v => !v)}>{showEarlier ? '▴' : '▾'} {earlier.length} other email{earlier.length === 1 ? '' : 's'} in this conversation</button>{showEarlier && <>
 {earlier.length > 0 && <div className="msg-earlier">{earlier.map((x: any, i: number) => <div key={x.id} className={`earlier-item${openIdx === i ? ' open' : ''}`}>
         <button onClick={() => setOpenIdx(openIdx === i ? null : i)}><b>{nameOf(x.from)}</b><span className="snip">{String(x.clean || x.body).replace(/\s+/g, ' ').slice(0, 140)}</span><span className="tiny muted nowrap">{fmtWhen(x.date)}</span></button>
@@ -271,7 +273,7 @@ const ATT_CATS: [string, string][] = [['', 'General'], ['agreement', 'Agreement'
 /** Attachments of an email: download, a short AI summary of each, and one click to file them in Documents (read + searchable). */
 function AttachmentSummary({ m }: { m: any }) {
   const toast = useToast();
-  const [rows, setRows] = useState<any[] | null>(null); const [busy, setBusy] = useState<string | null>(null);
+  const [rows, setRows] = useState<any[] | null>(null); const [busy, setBusy] = useState<string | null>(null); const [filed, setFiled] = useState<Set<string>>(new Set());
   const atts = realFiles(m.attachments);
   const items = atts.map((a: any) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, size: a.size }));
   const url = `/api/google/gmail/${m.id}/file-attachments`;
@@ -287,6 +289,11 @@ function AttachmentSummary({ m }: { m: any }) {
       toast(`${ok.size} saved to Documents${r.skipped?.length ? ` · ${r.skipped.length} skipped` : ''}`, 'success');
     } catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); }
   };
+  const assign = async (a: any, v: string) => {
+    if (!v) return; setBusy(a.id);
+    try { const r = await api.post(url, { action: 'save', items: [{ id: a.id, filename: a.filename, mimeType: a.mimeType, project_id: v === '__none' ? null : v }] }); if ((r.saved || []).length || (r.skipped || []).length) { setFiled(f => new Set(f).add(a.id)); toast(v === '__none' ? 'Saved to Documents' : 'Saved to Documents under the project', 'success'); } }
+    catch (e: any) { toast(e.message, 'error'); } finally { setBusy(null); }
+  };
   const download = async (a: any) => { try { const { blob } = await api.blob(`/api/google/gmail/${m.id}/attachments/${encodeURIComponent(a.id)}?name=${encodeURIComponent(a.filename)}&type=${encodeURIComponent(a.mimeType || '')}`); downloadBlob(blob, a.filename); } catch (e: any) { toast(e.message, 'error'); } };
   if (!atts.length) return null;
   return <div className="mail-atts">
@@ -297,7 +304,12 @@ function AttachmentSummary({ m }: { m: any }) {
         {rows && rows.some(r => !r.saved) && <Button size="sm" variant="primary" loading={busy === 'all'} onClick={() => save(rows)}>Save all to Documents</Button>}
       </div>
     </div>
-    {!rows && <div className="mail-att-row">{atts.map((a: any, i: number) => <button key={i} className="mail-att" title={`Download ${a.filename}`} onClick={() => download(a)}><Paperclip size={15} /><span className="nm">{a.filename}</span><span className="sz">{bytes(a.size)}</span></button>)}</div>}
+    {!rows && <div className="att-cards">{atts.map((a: any, i: number) => <div key={a.id || i} className="att-card">
+      <div className="row" style={{ gap: 8, alignItems: 'center' }}><Paperclip size={15} /><div style={{ minWidth: 0, flex: 1 }}><div className="nm ellipsis" title={a.filename}>{a.filename}</div><div className="tiny muted">{bytes(a.size)}</div></div></div>
+      <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+        <Button size="xs" variant="ghost" onClick={() => download(a)}>Download</Button>
+        {filed.has(a.id) ? <span className="tiny" style={{ color: 'var(--ok, #2f7d4f)' }}>✓ In Documents</span> : <select className="select sm" value="" disabled={busy === a.id} onChange={e => assign(a, e.target.value)} title="File this attachment in Documents under a project"><option value="">Assign ▾</option><option value="__none">File without a project</option><ProjectOptions /></select>}
+      </div></div>)}</div>}
     {rows && <div className="col" style={{ gap: 8 }}>{rows.map(r => <div key={r.id} className="card" style={{ padding: 10 }}>
       <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><b className="ellipsis" style={{ minWidth: 0 }}><Paperclip size={13} /> {r.filename}</b><span className="tiny muted">{bytes(r.size)}</span></div>
       <div className="small" style={{ margin: '4px 0 8px' }}>{r.summary}</div>

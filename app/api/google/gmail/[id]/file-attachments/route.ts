@@ -106,7 +106,7 @@ export const POST = route(async (req: NextRequest, { params }) => {
     if (dup) { skipped.push(it.filename); continue; }
     const bytes = await fetchBytes(it.id);
     if (!bytes.length || bytes.length > MAX) { skipped.push(it.filename); continue; }
-    const category = CATS.includes(it.category) ? it.category : null;
+    const category = CATS.includes(it.category) ? it.category : guess(String(it.filename), String(it.mimeType || ''));
     const projectId = projects.some((p: any) => p.id === it.project_id) ? it.project_id : null;
     const r = await ingestDocument({
       bytes, name: it.filename, mimeType: String(it.mimeType || 'application/octet-stream'), projectId, source: 'email', externalId: key,
