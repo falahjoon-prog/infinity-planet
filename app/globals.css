@@ -2091,3 +2091,13 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 .att-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); }
 .att-card .nm { font-weight: 600; }
 .mail-atts { margin: 12px 0; padding-top: 0; border-top: 0; }
+
+/* Reading typography: strong titles and names, quieter details, black email text */
+.mail-pane .msg-head h2 { font-size: calc(20px * var(--fs, 1)); font-weight: 750; letter-spacing: -.01em; line-height: 1.3; }
+.mail-pane .msg-from b { font-size: calc(16px * var(--fs, 1)); font-weight: 700; }
+.mail-pane .msg-from .muted, .mail-pane .msg-from .small, .mail-pane .msg-from .tiny, .mail-pane .msg-from .link-quiet { font-weight: 400; font-size: calc(12.5px * var(--fs, 1)); color: var(--muted, #6b7280); }
+.mail-pane .msg-meta-row, .mail-pane .tiny, .mail-pane .att-card .tiny { font-weight: 400; color: var(--muted, #6b7280); }
+:root:not([data-theme="dark"]) .mail-pane .msg-body, :root:not([data-theme="dark"]) .mail-pane .mail-text .mail-text-body, :root:not([data-theme="dark"]) .mail-pane .earlier-item .msg-body { color: #000; font-weight: 400; }
+.mail-row .from { font-weight: 700; }
+.mail-row .subj { font-weight: 600; }
+.mail-row .snip { font-weight: 400; color: var(--muted, #6b7280); }

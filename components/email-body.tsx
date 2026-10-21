@@ -39,7 +39,7 @@ export function LinkedText({ text, className }: { text: string; className?: stri
 }
 
 const FRAME_CSS = (showQuoted: boolean) => `
-  html,body{margin:0;padding:0;background:#fff;color:#1f2430;font:14.5px/1.6 -apple-system,'Segoe UI',Roboto,Vazirmatn,Arial,sans-serif;overflow-wrap:anywhere}
+  html,body{margin:0;padding:0;background:#fff;color:#000;font:14.5px/1.6 -apple-system,'Segoe UI',Roboto,Vazirmatn,Arial,sans-serif;overflow-wrap:anywhere}
   body{padding:6px 4px 10px}
   p{margin:0 0 .8em}
   .gmail_signature,[data-smartmail="gmail_signature"],#Signature,div[id^="Signature"],#signature,.signature,div[class*="Signature"]{color:#5b6270!important;font-size:13px!important;line-height:1.5;border-top:1px solid #e6e8ec;margin-top:14px;padding-top:10px}
