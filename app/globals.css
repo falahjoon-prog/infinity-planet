@@ -2124,3 +2124,14 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 .mail-pane .ai-strip { margin-bottom: 4px; }
 .mail-pane .msg-from { margin-bottom: 2px; }
 .mail-pane .msg-scroll { padding-top: 8px; }
+
+/* Clear type hierarchy in an open email: one strong line, everything else lighter */
+.mail-pane .msg-head h2 { font-weight: 800 !important; font-size: calc(19px * var(--fs, 1)) !important; color: var(--ink, #111) !important; }
+.mail-pane .msg-from b { font-weight: 800 !important; font-size: calc(15px * var(--fs, 1)) !important; color: var(--ink, #111) !important; }
+.mail-pane .msg-from * :not(b), .mail-pane .msg-from .muted, .mail-pane .msg-from .small, .mail-pane .msg-from .tiny { font-weight: 400 !important; font-size: calc(11.5px * var(--fs, 1)) !important; color: #7a8190 !important; }
+.mail-pane .ai-strip-line, .mail-pane .ai-strip-text { font-weight: 400 !important; font-size: calc(12px * var(--fs, 1)) !important; }
+.mail-pane .ai-strip-meta { font-size: calc(10.5px * var(--fs, 1)) !important; }
+.mail-pane .att-line .att-card .nm { font-weight: 500 !important; font-size: calc(11.5px * var(--fs, 1)) !important; color: #3b4252 !important; }
+.mail-pane .att-line .att-card .tiny { font-weight: 400 !important; font-size: calc(10.5px * var(--fs, 1)) !important; color: #8a91a0 !important; }
+.mail-pane .msg-meta-row button, .mail-pane .msg-meta-row .chip-btn, .mail-pane .att-line button, .mail-pane .att-line select { font-weight: 400 !important; font-size: calc(11.5px * var(--fs, 1)) !important; color: #5b6272 !important; }
+.mail-pane .att-line svg, .mail-pane .msg-meta-row svg, .mail-pane .ai-strip svg { width: 12px !important; height: 12px !important; }
