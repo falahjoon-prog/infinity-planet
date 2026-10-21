@@ -2201,3 +2201,7 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip { background: #1b2028; border-color: #323a47; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #fff !important; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #5fd08a !important; }
+
+/* AI summary headline ("Should we setup a call…"): bold */
+:is(.mail-pane, .drawer) .ai-strip .ai-strip-text, :is(.mail-pane, .drawer) .ai-strip .ai-strip-line { font-weight: 800 !important; }
+:is(.mail-pane, .drawer) .ai-strip .ai-strip-meta { font-weight: 500 !important; }
