@@ -6,7 +6,7 @@ import { Translate } from '@/components/translate';
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Search, PenSquare, Reply, ReplyAll, Forward, Link2, Send, ShieldCheck, Wand2, Trash2, Paperclip, RefreshCw, Sparkles, Eye, Undo2, History, ChevronDown, ChevronRight, Star, Archive, MailOpen, Mail as MailClosed, Clock, X, Plus, FileText, BookmarkPlus, CalendarClock, Plane, SlidersHorizontal, Inbox as InboxIcon, Maximize2, Maximize, Minimize, ChevronsRight } from 'lucide-react';
+import { Mail, Search, PenSquare, Reply, ReplyAll, Forward, Link2, Send, ShieldCheck, Wand2, Trash2, Paperclip, RefreshCw, Sparkles, Eye, Undo2, History, ChevronDown, ChevronRight, Star, Archive, MailOpen, Mail as MailClosed, Clock, X, Plus, FileText, BookmarkPlus, CalendarClock, Plane, SlidersHorizontal, Inbox as InboxIcon, Maximize2, Download, Maximize, Minimize, ChevronsRight } from 'lucide-react';
 import { api, useApi, downloadBlob } from '@/lib/client/api';
 import { useApp } from '@/components/app-context';
 import { ProjectSelect, ProviderSelect } from '@/components/pickers';
@@ -297,19 +297,18 @@ function AttachmentSummary({ m }: { m: any }) {
   const download = async (a: any) => { try { const { blob } = await api.blob(`/api/google/gmail/${m.id}/attachments/${encodeURIComponent(a.id)}?name=${encodeURIComponent(a.filename)}&type=${encodeURIComponent(a.mimeType || '')}`); downloadBlob(blob, a.filename); } catch (e: any) { toast(e.message, 'error'); } };
   if (!atts.length) return null;
   return <div className="mail-atts">
-    <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}>
-      <div className="tiny muted">{atts.length} attachment{atts.length === 1 ? '' : 's'}</div>
-      <div className="row" style={{ gap: 6 }}>
-        {!rows && <Button size="sm" variant="ghost" loading={busy === 's'} onClick={summarise}><Sparkles size={14} /> Summarise &amp; file</Button>}
-        {rows && rows.some(r => !r.saved) && <Button size="sm" variant="primary" loading={busy === 'all'} onClick={() => save(rows)}>Save all to Documents</Button>}
-      </div>
+    {!rows ? <div className="att-line">
+      {atts.map((a: any, i: number) => <div key={a.id || i} className="att-card">
+        <Paperclip size={14} /><span className="nm" title={a.filename}>{a.filename}</span><span className="tiny muted nowrap">{bytes(a.size)}</span>
+        <button className="icon-btn" title="Download" onClick={() => download(a)}><Download size={14} /></button>
+        {filed.has(a.id) ? <span className="tiny nowrap" style={{ color: 'var(--ok, #2f7d4f)' }}>✓ In Documents</span> : <select className="select sm" value="" disabled={busy === a.id} onChange={e => assign(a, e.target.value)} title="File this attachment in Documents under a project"><option value="">Assign ▾</option><option value="__none">File without a project</option><ProjectOptions /></select>}
+      </div>)}
+      <Button size="xs" variant="ghost" loading={busy === 's'} onClick={summarise}><Sparkles size={13} /> Summarise &amp; file</Button>
     </div>
-    {!rows && <div className="att-cards">{atts.map((a: any, i: number) => <div key={a.id || i} className="att-card">
-      <div className="row" style={{ gap: 8, alignItems: 'center' }}><Paperclip size={15} /><div style={{ minWidth: 0, flex: 1 }}><div className="nm ellipsis" title={a.filename}>{a.filename}</div><div className="tiny muted">{bytes(a.size)}</div></div></div>
-      <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-        <Button size="xs" variant="ghost" onClick={() => download(a)}>Download</Button>
-        {filed.has(a.id) ? <span className="tiny" style={{ color: 'var(--ok, #2f7d4f)' }}>✓ In Documents</span> : <select className="select sm" value="" disabled={busy === a.id} onChange={e => assign(a, e.target.value)} title="File this attachment in Documents under a project"><option value="">Assign ▾</option><option value="__none">File without a project</option><ProjectOptions /></select>}
-      </div></div>)}</div>}
+    : <div className="row" style={{ justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+      <div className="tiny muted">{atts.length} attachment{atts.length === 1 ? '' : 's'}</div>
+      {rows.some(r => !r.saved) && <Button size="sm" variant="primary" loading={busy === 'all'} onClick={() => save(rows)}>Save all to Documents</Button>}
+    </div>}
     {rows && <div className="col" style={{ gap: 8 }}>{rows.map(r => <div key={r.id} className="card" style={{ padding: 10 }}>
       <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}><b className="ellipsis" style={{ minWidth: 0 }}><Paperclip size={13} /> {r.filename}</b><span className="tiny muted">{bytes(r.size)}</span></div>
       <div className="small" style={{ margin: '4px 0 8px' }}>{r.summary}</div>

@@ -2101,3 +2101,13 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 .mail-row .from { font-weight: 700; }
 .mail-row .subj { font-weight: 600; }
 .mail-row .snip { font-weight: 400; color: var(--muted, #6b7280); }
+
+/* Compact attachment line + tighter spacing at the top of an open email */
+.mail-pane .msg-from { margin-bottom: 4px; }
+.mail-pane .ai-strip { margin-bottom: 6px; }
+.mail-pane .msg-meta-row { margin-bottom: 6px; }
+.mail-pane .mail-atts { margin: 4px 0 8px; }
+.att-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.att-line .att-card { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 8px 4px 10px; border-radius: 10px; }
+.att-line .att-card .nm { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.att-line .att-card .select { width: 104px; padding-top: 2px; padding-bottom: 2px; }
