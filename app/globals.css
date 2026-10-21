@@ -2177,3 +2177,15 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip { background: #1d2230; border-color: #2c3346; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #f3f4f6 !important; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #9ca3af !important; }
+
+/* AI summary palette v2: soft indigo box, deep indigo main text, slate sub text */
+:is(.mail-pane, .drawer) .ai-strip { background: #eef2ff; border-color: #c7d2fe; }
+:is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #1e1b4b !important; }
+:is(.mail-pane, .drawer) .ai-strip-line svg { color: #4f46e5; }
+:is(.mail-pane, .drawer) .ai-strip-body { color: #475569 !important; }
+:is(.mail-pane, .drawer) .ai-strip-body .tiny b { color: #3730a3 !important; }
+:is(.mail-pane, .drawer) .ai-strip-meta, :is(.mail-pane, .drawer) .ai-strip-body .tiny, :is(.mail-pane, .drawer) .ai-strip-body .tiny .muted { color: #6b7aa6 !important; }
+:is(.mail-pane, .drawer) .file-pill { border-color: #c7d2fe; color: #312e81; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip { background: #1e2140; border-color: #353a6b; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #e0e7ff !important; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #a5b0d0 !important; }
