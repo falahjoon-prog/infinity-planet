@@ -39,9 +39,15 @@ export function LinkedText({ text, className }: { text: string; className?: stri
 }
 
 const FRAME_CSS = (showQuoted: boolean) => `
-  html,body{margin:0;padding:0;background:#fff;color:#000;font:14.5px/1.6 -apple-system,'Segoe UI',Roboto,Vazirmatn,Arial,sans-serif;overflow-wrap:anywhere}
+  html,body{margin:0;padding:0;background:#fff;color:#000;font:14px/1.5 -apple-system,'Segoe UI',Roboto,Vazirmatn,Arial,sans-serif;overflow-wrap:anywhere}
   body{padding:6px 4px 10px}
-  p{margin:0 0 .8em}
+  p{margin:0 0 .5em}
+  br+br{display:none}
+  p:empty,div:empty{display:none}
+  table td,table th{font-size:12.5px!important;line-height:1.35!important;overflow-wrap:normal!important;word-break:normal!important;padding-top:2px!important;padding-bottom:2px!important}
+  table td *{font-size:inherit!important;line-height:inherit!important;margin-top:0!important;margin-bottom:0!important}
+  table td b,table td strong{font-size:14px!important}
+  table img[src*="logo"]{max-width:90px!important}
   .gmail_signature,[data-smartmail="gmail_signature"],#Signature,div[id^="Signature"],#signature,.signature,div[class*="Signature"]{color:#5b6270!important;font-size:13px!important;line-height:1.5;border-top:1px solid #e6e8ec;margin-top:14px;padding-top:10px}
   .gmail_signature *,#Signature *,div[id^="Signature"] *{font-size:inherit}
   img{max-width:100%;height:auto}

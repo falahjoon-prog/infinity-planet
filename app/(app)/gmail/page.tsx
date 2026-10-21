@@ -252,7 +252,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
       {earlier.length > 0 && <div className="msg-earlier-wrap" style={{ marginTop: 14 }}><button className="link-quiet small" onClick={() => setShowEarlier(v => !v)}>{showEarlier ? '▴' : '▾'} {earlier.length} other email{earlier.length === 1 ? '' : 's'} in this conversation</button>{showEarlier && <>
 {earlier.length > 0 && <div className="msg-earlier">{earlier.map((x: any, i: number) => <div key={x.id} className={`earlier-item${openIdx === i ? ' open' : ''}`}>
         <button onClick={() => setOpenIdx(openIdx === i ? null : i)}><b>{nameOf(x.from)}</b><span className="snip">{String(x.clean || x.body).replace(/\s+/g, ' ').slice(0, 140)}</span><span className="tiny muted nowrap">{fmtWhen(x.date)}</span></button>
-        {openIdx === i && <EmailText className="msg-body" sender={nameOf(x.from)} text={x.clean || x.body} />}
+        {openIdx === i && <EarlierBody id={x.id} fallback={<EmailText className="msg-body" sender={nameOf(x.from)} text={x.clean || x.body} />} />}
       </div>)}</div>}
 {earlierFiles.length > 0 && <div className="msg-earlier-files"><div className="tiny muted" style={{ margin: '10px 0 4px' }}>Files in earlier emails of this conversation</div>{earlierFiles.map((x: any) => <div key={x.id}><div className="tiny muted">{nameOf(x.from)} · {fmtWhen(x.date)}</div><AttachmentSummary m={{ id: x.id, attachments: x.attachments }} /></div>)}</div>}
 </>}</div>}
@@ -271,6 +271,13 @@ const isJunkPic = (a: any) => /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\
 const realFiles = (list: any[]) => { const seen = new Set<string>(); return (list || []).filter(a => { if (isJunkPic(a)) return false; const k = `${a.filename}:${a.size}`; if (seen.has(k)) return false; seen.add(k); return true; }); };
 const ATT_CATS: [string, string][] = [['', 'General'], ['agreement', 'Agreement'], ['mou', 'MOU'], ['contract', 'Contract'], ['correspondence', 'Correspondence'], ['financial', 'Financial'], ['planning', 'Planning'], ['marketing', 'Marketing'], ['design', 'Design'], ['due_diligence', 'Due diligence'], ['report', 'Report'], ['template', 'Template'], ['board_minutes', 'Board meeting record']];
 /** Attachments of an email: download, a short AI summary of each, and one click to file them in Documents (read + searchable). */
+// Earlier emails open with their real formatting (logo, signature pictures), like Gmail; plain text while it loads or if it fails.
+function EarlierBody({ id, fallback }: { id: string; fallback: React.ReactNode }) {
+  const { data } = useApi<any>(`/api/google/gmail/${id}`, [id]);
+  const html = data?.message?.html;
+  return html ? <EmailFrame html={html} showQuoted={false} /> : <>{fallback}</>;
+}
+
 function AttachmentSummary({ m }: { m: any }) {
   const toast = useToast();
   const [rows, setRows] = useState<any[] | null>(null); const [busy, setBusy] = useState<string | null>(null); const [filed, setFiled] = useState<Set<string>>(new Set());
