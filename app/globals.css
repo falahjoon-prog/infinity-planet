@@ -2205,3 +2205,17 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 /* AI summary headline ("Should we setup a call…"): bold */
 :is(.mail-pane, .drawer) .ai-strip .ai-strip-text, :is(.mail-pane, .drawer) .ai-strip .ai-strip-line { font-weight: 800 !important; }
 :is(.mail-pane, .drawer) .ai-strip .ai-strip-meta { font-weight: 500 !important; }
+
+/* One line: Link to project + attachment + Assign + Summarise + Translate */
+:is(.mail-pane, .drawer) .msg-meta-row { flex-wrap: nowrap !important; gap: 6px; min-width: 0; align-items: center; }
+:is(.mail-pane, .drawer) .msg-meta-row > * { flex: 0 0 auto; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-card { flex: 1 1 0; min-width: 0; height: 26px; padding: 0 4px 0 7px; gap: 4px; display: inline-flex; align-items: center; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-card .nm { flex: 1 1 0; min-width: 40px; max-width: none; font-size: 11.5px !important; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-card .tiny { display: none; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-card .select { width: 70px; flex: none; height: 20px; font-size: 11px !important; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-card .icon-btn { flex: none; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-line > button { flex: none; font-size: 0 !important; padding: 2px 6px; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-line > button svg { width: 14px !important; height: 14px !important; }
+:is(.mail-pane, .drawer) .msg-meta-row .chip-btn { white-space: nowrap; padding: 2px 8px; }
+:is(.mail-pane, .drawer) .msg-meta-row .spacer { flex: 0 0 0 !important; }
+:is(.mail-pane, .drawer) .msg-meta-row > :last-child { margin-left: auto; white-space: nowrap; font-size: 11px; }

@@ -320,7 +320,7 @@ function AttachmentSummary({ m }: { m: any }) {
         <button className="icon-btn" title="Download" onClick={() => download(a)}><Download size={14} /></button>
         {filed.has(a.id) ? <span className="tiny nowrap" style={{ color: 'var(--ok, #2f7d4f)' }}>✓ In Documents</span> : <select className="select sm" value="" disabled={busy === a.id} onChange={e => assign(a, e.target.value)} title="File this attachment in Documents under a project"><option value="">Assign ▾</option><option value="__none">File without a project</option><ProjectOptions /></select>}
       </div>)}
-      <Button size="xs" variant="ghost" loading={busy === 's'} onClick={summarise}><Sparkles size={13} /> Summarise &amp; file</Button>
+      <Button size="xs" variant="ghost" loading={busy === 's'} onClick={summarise} title="Summarise the attachments with AI and file them in Documents"><Sparkles size={13} /> Summarise &amp; file</Button>
     </div>
     : <div className="row" style={{ justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
       <div className="tiny muted">{atts.length} attachment{atts.length === 1 ? '' : 's'}</div>
