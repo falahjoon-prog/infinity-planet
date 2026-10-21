@@ -2111,3 +2111,16 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 .att-line .att-card { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 8px 4px 10px; border-radius: 10px; }
 .att-line .att-card .nm { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .att-line .att-card .select { width: 104px; padding-top: 2px; padding-bottom: 2px; }
+
+/* Tighter still: attachments share the Link/Translate row; smaller text */
+.mail-pane .msg-meta-row .mail-atts { margin: 0; display: contents; }
+.mail-pane .msg-meta-row .att-line { display: contents; }
+.mail-pane .msg-meta-row { gap: 6px; margin-bottom: 4px; }
+.mail-pane .att-line .att-card { padding: 2px 6px 2px 8px; gap: 6px; font-size: calc(12px * var(--fs, 1)); border-radius: 8px; }
+.mail-pane .att-line .att-card .nm { max-width: 170px; font-weight: 600; font-size: calc(12px * var(--fs, 1)); }
+.mail-pane .att-line .att-card .select { width: 84px; font-size: calc(11.5px * var(--fs, 1)); height: 22px; padding: 0 4px; }
+.mail-pane .att-line .icon-btn { padding: 2px; }
+.mail-pane .ai-strip-line { padding: 4px 10px; font-size: calc(12.5px * var(--fs, 1)); }
+.mail-pane .ai-strip { margin-bottom: 4px; }
+.mail-pane .msg-from { margin-bottom: 2px; }
+.mail-pane .msg-scroll { padding-top: 8px; }

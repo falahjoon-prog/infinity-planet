@@ -239,9 +239,9 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
         {can.write && !linkOpen && <button className="chip-btn" onClick={() => setLinkOpen(true)}><Plus size={12} /> {linked.length ? 'Link another project' : 'Link to project'}</button>}
         {linkOpen && (newProj === null ? <span className="row" style={{ gap: 6 }}><select className="select sm" style={{ width: 220 }} value={project || ''} onChange={e => { if (e.target.value === '__new') { setNewProj(String(m.subject || '').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i, '').slice(0, 80)); return; } setProject(e.target.value || null); }}><option value="">Choose a project…</option><ProjectOptions /><option value="__new">＋ New project from this email…</option></select>{realFiles(m.attachments).length > 0 && <label className="check small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}><input type="checkbox" checked={alsoFile} onChange={e => setAlsoFile(e.target.checked)} /> Also file the {realFiles(m.attachments).length} attachment{realFiles(m.attachments).length === 1 ? '' : 's'} to this project</label>}<Button size="xs" variant="primary" disabled={!project} onClick={() => link()}>Link</Button><Button size="xs" variant="ghost" onClick={() => setLinkOpen(false)}>Cancel</Button></span>
           : <span className="row" style={{ gap: 6 }}><input className="input sm" style={{ width: 240 }} autoFocus value={newProj} onChange={e => setNewProj(e.target.value)} placeholder="Project name" /><Button size="xs" variant="primary" onClick={createAndLink}>Create & link</Button><Button size="xs" variant="ghost" onClick={() => setNewProj(null)}>Cancel</Button></span>)}
+        {m.attachments.length > 0 && <AttachmentSummary key={m.id} m={m} />}
         <span className="spacer" /><Translate text={clean} />
       </div>
-      {m.attachments.length > 0 && <AttachmentSummary key={m.id} m={m} />}
       {ev && <EventCard e={ev} />}
       {original && m.html ? <EmailFrame html={m.html} showQuoted={quoted} />
         : (!ev || original) ? <EmailText className="msg-body" sender={nameOf(m.from)} text={(quoted ? full : clean) || '(no text body)'} /> : null}
