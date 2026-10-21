@@ -2167,3 +2167,13 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 :is(.mail-pane, .drawer) .ai-strip-meta { font-size: calc(10.5px * var(--fs, 1)) !important; color: #8a91a0 !important; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #dbe6ff !important; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #a9b4c8 !important; }
+
+/* AI summary colours: main = near-black, sub = mid grey, neutral background */
+:is(.mail-pane, .drawer) .ai-strip { background: #f5f6f8; border-color: #e3e6eb; }
+:is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #111827 !important; }
+:is(.mail-pane, .drawer) .ai-strip-line svg { color: #6b7280; }
+:is(.mail-pane, .drawer) .ai-strip-body { color: #6b7280 !important; }
+:is(.mail-pane, .drawer) .ai-strip-body .tiny b { color: #4b5563 !important; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip { background: #1d2230; border-color: #2c3346; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #f3f4f6 !important; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #9ca3af !important; }
