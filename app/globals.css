@@ -2150,3 +2150,10 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 .mail-pane .msg-actions button, .mail-pane .msg-actions .btn { height: 36px; border-radius: 18px !important; border: 1px solid #747775 !important; background: #fff !important; color: #444746 !important; font-size: 14px !important; font-weight: 500 !important; padding: 0 16px !important; box-shadow: none !important; }
 .mail-pane .msg-actions button:hover { background: #f1f3f4 !important; }
 :root[data-theme="dark"] .mail-pane .msg-actions button { background: transparent !important; color: #e3e3e3 !important; border-color: #8e918f !important; }
+
+.file-pill { display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; margin: 0 2px; border-radius: 999px; background: #fff; border: 1px solid #dfe3ea; color: #1f1f1f; font-weight: 500; vertical-align: baseline; line-height: 1.6; }
+:root[data-theme="dark"] .file-pill { background: #222a38; border-color: #33405a; color: #e3e3e3; }
+
+/* Attachment = one wide, thin bar: full file name, size, download, assign on a single line */
+.mail-pane .att-line .att-card { flex-direction: row; flex-wrap: nowrap; width: auto; min-height: 0; height: 28px; }
+.mail-pane .att-line .att-card .nm { max-width: 420px; }

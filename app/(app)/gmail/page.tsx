@@ -191,6 +191,7 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
   const ev = m.event;
   const earlier = msgs.filter(x => x.id !== m.id);
   const earlierFiles = earlier.filter((x: any) => realFiles(x.attachments).length > 0);
+  const fileNames: string[] = [...realFiles(m?.attachments), ...earlierFiles.flatMap((x: any) => realFiles(x.attachments))].map((a: any) => String(a.filename));
   const myIdx = msgs.findIndex(x => x.id === m.id); const isLatest = myIdx === msgs.length - 1;
   const reply = (all: boolean, auto: boolean) => {
     const rt = read?.reply_to; const to = rt?.to || addr(m.from);
@@ -225,12 +226,12 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
       </div>
       <div className={`ai-strip${aiOpen ? ' open' : ''}`}>
         <button className="ai-strip-line" onClick={() => setAiOpen(o => !o)} aria-expanded={aiOpen}>
-          <Sparkles size={14} /><span className="ai-strip-text">{reading ? 'Reading the email and earlier emails…' : headline ? headline : read ? 'No questions or requests found.' : 'Summary unavailable.'}</span>
+          <Sparkles size={14} /><span className="ai-strip-text">{reading ? 'Reading the email and earlier emails…' : headline ? withFiles(headline, fileNames) : read ? 'No questions or requests found.' : 'Summary unavailable.'}</span>
           {read?.related?.length > 0 && <span className="ai-strip-meta"><History size={12} /> {read.related.length} earlier</span>}
           {aiOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
         {aiOpen && read && <div className="ai-strip-body">
-          <ul>{read.insights.map((x: string, i: number) => <li key={i}>{x}</li>)}</ul>
+          <ul>{read.insights.map((x: string, i: number) => <li key={i}>{withFiles(x, fileNames)}</li>)}</ul>
           {read.related?.length > 0 && <div className="stack" style={{ gap: 4, marginTop: 6 }}>{read.related.map((r: any) => <div key={r.id} className="tiny"><b>{r.subject}</b> <span className="muted">{r.date ? date(r.date) : ''}{r.project ? ` · ${r.project}` : ''}</span></div>)}</div>}
         </div>}
       </div>
@@ -271,6 +272,15 @@ const isJunkPic = (a: any) => /^(image\d+|~WRD\d+|outlook-\w+|spacer|clip_image\
 const realFiles = (list: any[]) => { const seen = new Set<string>(); return (list || []).filter(a => { if (isJunkPic(a)) return false; const k = `${a.filename}:${a.size}`; if (seen.has(k)) return false; seen.add(k); return true; }); };
 const ATT_CATS: [string, string][] = [['', 'General'], ['agreement', 'Agreement'], ['mou', 'MOU'], ['contract', 'Contract'], ['correspondence', 'Correspondence'], ['financial', 'Financial'], ['planning', 'Planning'], ['marketing', 'Marketing'], ['design', 'Design'], ['due_diligence', 'Due diligence'], ['report', 'Report'], ['template', 'Template'], ['board_minutes', 'Board meeting record']];
 /** Attachments of an email: download, a short AI summary of each, and one click to file them in Documents (read + searchable). */
+// Shows file names inside the AI summary as small file chips, like Gmail's AI Overview.
+function withFiles(text: any, names: string[]): React.ReactNode {
+  const t = String(text ?? ''); const list = Array.from(new Set(names.filter(n => n && n.length > 3))).sort((a, b) => b.length - a.length);
+  if (!list.length) return t;
+  const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('(' + list.map(esc).join('|') + ')', 'i');
+  return t.split(re).map((part, i) => (i % 2 ? <span key={i} className="file-pill" title={part}><FileText size={11} />{part}</span> : part));
+}
+
 // Earlier emails open with their real formatting (logo, signature pictures), like Gmail; plain text while it loads or if it fails.
 function EarlierBody({ id, fallback }: { id: string; fallback: React.ReactNode }) {
   const { data } = useApi<any>(`/api/google/gmail/${id}`, [id]);
