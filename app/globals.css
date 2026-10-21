@@ -2219,3 +2219,9 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 :is(.mail-pane, .drawer) .msg-meta-row .chip-btn { white-space: nowrap; padding: 2px 8px; }
 :is(.mail-pane, .drawer) .msg-meta-row .spacer { flex: 0 0 0 !important; }
 :is(.mail-pane, .drawer) .msg-meta-row > :last-child { margin-left: auto; white-space: nowrap; font-size: 11px; }
+
+/* give the file name more room: slimmer Assign, tighter row */
+:is(.mail-pane, .drawer) .msg-meta-row .att-card .select { width: 58px; appearance: none; -webkit-appearance: none; background-image: none; padding: 0 6px; text-align: left; }
+:is(.mail-pane, .drawer) .msg-meta-row { gap: 4px; }
+:is(.mail-pane, .drawer) .msg-meta-row .chip-btn { padding: 2px 6px; font-size: 11px !important; }
+:is(.mail-pane, .drawer) .msg-meta-row .att-card .nm { min-width: 70px; }
