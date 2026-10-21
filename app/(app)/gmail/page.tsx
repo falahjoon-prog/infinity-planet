@@ -217,11 +217,11 @@ function MessageView({ id, onClose, onCompose, onChanged }: { id: string; onClos
       <div className="msg-from">
         <span className="avatar" style={{ background: '#2f6fd0' }}>{nameOf(m.from).slice(0, 1).toUpperCase()}</span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div><b>{nameOf(m.from)}</b> <span className="muted small">&lt;{addr(m.from)}&gt;</span></div>
+          <div><b>{nameOf(m.from)}</b></div>
           <button className="link-quiet small" onClick={() => setDetails(d => !d)}>to {recipients.slice(0, 3).join(', ')}{recipients.length > 3 ? ` +${recipients.length - 3}` : ''} {details ? '▴' : '▾'}</button>
-          {details && <div className="tiny muted" style={{ marginTop: 4 }}><div>To: {m.to}</div>{m.cc && <div>Cc: {m.cc}</div>}</div>}
+          {details && <div className="tiny muted" style={{ marginTop: 4 }}><div>From: {m.from}</div><div>To: {m.to}</div>{m.cc && <div>Cc: {m.cc}</div>}</div>}
         </div>
-        <span className="small muted nowrap">{earlier.length > 0 && <b style={{ color: isLatest ? 'var(--ok, #2f7d4f)' : 'inherit' }}>{isLatest ? 'Latest email' : `Email ${myIdx + 1} of ${msgs.length}`} · </b>}{fmtWhen(m.date)}</span>
+        <span className="msg-when nowrap">{earlier.length > 0 && <span>{isLatest ? 'Latest email' : `Email ${myIdx + 1} of ${msgs.length}`} · </span>}{fmtWhen(m.date)}</span>
       </div>
       <div className={`ai-strip${aiOpen ? ' open' : ''}`}>
         <button className="ai-strip-line" onClick={() => setAiOpen(o => !o)} aria-expanded={aiOpen}>
