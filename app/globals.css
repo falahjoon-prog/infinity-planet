@@ -2157,3 +2157,13 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 /* Attachment = one wide, thin bar: full file name, size, download, assign on a single line */
 :is(.mail-pane, .drawer) .att-line .att-card { flex-direction: row; flex-wrap: nowrap; width: auto; min-height: 0; height: 28px; }
 :is(.mail-pane, .drawer) .att-line .att-card .nm { max-width: 420px; }
+
+/* AI summary: main text vs sub text */
+:is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { font-size: calc(13.5px * var(--fs, 1)) !important; font-weight: 650 !important; color: #1b2a4a !important; line-height: 1.35; }
+:is(.mail-pane, .drawer) .ai-strip-body { font-size: calc(12px * var(--fs, 1)) !important; font-weight: 400 !important; color: #5f6675 !important; line-height: 1.45; }
+:is(.mail-pane, .drawer) .ai-strip-body li { margin: 1px 0; }
+:is(.mail-pane, .drawer) .ai-strip-body .tiny, :is(.mail-pane, .drawer) .ai-strip-body .tiny .muted { font-size: calc(11px * var(--fs, 1)) !important; font-weight: 400 !important; color: #8a91a0 !important; }
+:is(.mail-pane, .drawer) .ai-strip-body .tiny b { font-weight: 600 !important; color: #5f6675 !important; }
+:is(.mail-pane, .drawer) .ai-strip-meta { font-size: calc(10.5px * var(--fs, 1)) !important; color: #8a91a0 !important; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #dbe6ff !important; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #a9b4c8 !important; }
