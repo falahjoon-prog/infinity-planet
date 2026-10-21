@@ -2189,3 +2189,15 @@ html.mail-full .mail-split { position: fixed !important; inset: 0; z-index: 90; 
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip { background: #1e2140; border-color: #353a6b; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #e0e7ff !important; }
 :root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #a5b0d0 !important; }
+
+/* AI summary palette v3: strong contrast. Main = black bold, sub = RHC green, light neutral box */
+:is(.mail-pane, .drawer) .ai-strip { background: #f7f8fa; border-color: #dfe3e8; }
+:is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #000 !important; font-weight: 700 !important; font-size: calc(14px * var(--fs, 1)) !important; }
+:is(.mail-pane, .drawer) .ai-strip-line svg { color: #0f7a3d; }
+:is(.mail-pane, .drawer) .ai-strip-body { color: #0f7a3d !important; font-size: calc(11.5px * var(--fs, 1)) !important; }
+:is(.mail-pane, .drawer) .ai-strip-body .tiny b { color: #0b5a2d !important; }
+:is(.mail-pane, .drawer) .ai-strip-meta, :is(.mail-pane, .drawer) .ai-strip-body .tiny, :is(.mail-pane, .drawer) .ai-strip-body .tiny .muted { color: #6b7280 !important; }
+:is(.mail-pane, .drawer) .file-pill { border-color: #cfd5dc; color: #000; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip { background: #1b2028; border-color: #323a47; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-line .ai-strip-text { color: #fff !important; }
+:root[data-theme="dark"] :is(.mail-pane, .drawer) .ai-strip-body { color: #5fd08a !important; }
